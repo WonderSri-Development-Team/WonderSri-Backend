@@ -1,0 +1,67 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django specific
+*.sqlite3
+db.sqlite3
+
+# Environment variables
+.env
+
+# Local environment
+*.local
+*.env.local
+
+# Virtual environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Static files
+/static/
+# Include if you're not committing static files after running collectstatic
+staticfiles/
+*.sass-cache
+
+# Media files (optional, depending on your setup)
+media/
+
+# Logs and debugging
+*.log
+*.pot
+debug.log
+error.log
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# macOS specific
+.DS_Store
+
+# Windows specific
+Thumbs.db
+
+# Test outputs
+coverage/
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Build files
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Packages
+*.wheel
+
+# Pipfile environment management (optional, if you're not using Pipenv)
+Pipfile.lock
