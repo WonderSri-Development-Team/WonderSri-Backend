@@ -22,7 +22,7 @@ from users import views
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+
 
     path('login',views.login),
 
@@ -34,6 +34,10 @@ urlpatterns = [
     path('change-password',views.change_password),
 
     path('test-auth',views.test_auth),
+
+    path('logout',views.logout),
+
+    path('google-login', views.googleOauthLogin),
 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger-ui'),
 

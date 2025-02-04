@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Authentication API",
+        title="WonderSri API's",
         default_version="v1",
         description="API documentation for authentication system",
         contact=openapi.Contact(email="wondersriteam@gmail.com"),

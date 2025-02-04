@@ -1,5 +1,6 @@
 from os import access
 
+from decouple import config
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,8 +11,17 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth.tokens import default_token_generator
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+
+from WonderSri_backend import settings
 from .utils import generate_password_reset_link, send_reset_email
 from .serializers import UserSerializer
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework.views import APIView
+from social_django.utils import load_strategy
+from social_core.backends.google import GoogleOAuth2
+from rest_framework.exceptions import AuthenticationFailed
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 # Ensure emails are unique
 User._meta.get_field('email')._unique = True
@@ -210,6 +220,29 @@ def change_password(request):
 
     return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
 
+@swagger_auto_schema(
+    method='post',
+    operation_description="Logout the user",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={'refresh_token': openapi.Schema(type=openapi.TYPE_STRING, description="Refresh token")},
+        required=['refresh_token'],
+    ),
+    reponses={'200': "Logout successful",'400': "Bad Request"}
+)
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        refresh_token = request.data.get('refresh_token')
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+        return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
+    except Exception:
+        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @swagger_auto_schema(
     method='get',
@@ -222,3 +255,53 @@ def change_password(request):
 def test_auth(request):
     """Test authentication endpoint."""
     return Response({'message': f'Authenticated as {request.user.username}'}, status=status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Google OAuth login using ID token",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'id_token': openapi.Schema(type=openapi.TYPE_STRING, description="Google ID token")},
+        required=['id_token'],
+    ),
+    responses={
+        '200': openapi.Response(description="Google OAuth login successful"),
+        '400': openapi.Response(description="Bad Request")
+    }
+)
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def googleOauthLogin(request):
+    id_token_data = request.data.get('id_token')  # Use ID token, not refresh token
+
+    if not id_token_data:
+        return Response({'error': 'ID Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Replace 'YOUR_GOOGLE_CLIENT_ID' with your actual Google OAuth client ID
+        CLIENT_ID = settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
+
+        # Verify the Google ID token
+        id_info = id_token.verify_oauth2_token(id_token_data, requests.Request(), CLIENT_ID)
+
+        # Ensure the token is intended for your app
+        if id_info['aud'] != CLIENT_ID:
+            raise ValueError('Invalid audience')
+
+        # Find or create user based on Google email
+        user, created = User.objects.get_or_create(
+            email=id_info['email'],
+            defaults={'username': id_info['email']}
+        )
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        }, status=status.HTTP_200_OK)
+
+    except ValueError as e:
+        return Response({'error': 'Invalid token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
