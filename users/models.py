@@ -64,6 +64,7 @@ class UserProfile(models.Model):
     notification_radius = models.IntegerField(default=100, help_text="Preferred notification radius in meters")
     interests = models.JSONField(default=list, blank=True)
     visited_locations = models.ManyToManyField(Location, through='UserVisit')
+    email_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Profile of {self.user.username}"

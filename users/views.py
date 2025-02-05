@@ -1,6 +1,4 @@
-from os import access
-
-from decouple import config
+import jwt
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,15 +9,9 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth.tokens import default_token_generator
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-
 from WonderSri_backend import settings
-from .utils import generate_password_reset_link, send_reset_email
+from .utils import send_reset_email, send_email_verification_email
 from .serializers import UserSerializer
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
-from rest_framework.views import APIView
-from social_django.utils import load_strategy
-from social_core.backends.google import GoogleOAuth2
-from rest_framework.exceptions import AuthenticationFailed
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
@@ -63,7 +55,7 @@ auth_response_schema = openapi.Schema(
 )
 @api_view(['POST'])
 def login(request):
-    """Login user and return JWT tokens."""
+    """Login user and return JWT tokens only if email is verified."""
     email = request.data.get('email')
     password = request.data.get('password')
 
@@ -72,12 +64,18 @@ def login(request):
 
     try:
         user = User.objects.get(email=email)
+
+        # Check if the email is verified
+        if not user.is_active:
+            return Response({'error': 'Please verify your email before logging in.'}, status=status.HTTP_403_FORBIDDEN)
+
         if not user.check_password(password):
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
     except User.DoesNotExist:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-
+    # Generate JWT tokens
     refresh = RefreshToken.for_user(user)
     serializer = UserSerializer(instance=user)
     access = str(refresh.access_token)
@@ -104,14 +102,21 @@ def signup(request):
     serializer = UserSerializer(data=request.data)
 
     if serializer.is_valid():
+
         user = serializer.save()
+        user.is_active = False  #Prevents log in without verifying
+        user.save()
+
         refresh = RefreshToken.for_user(user)
         access = str(refresh.access_token)
+
+        send_email_verification_email(user)
 
         return Response({
             'refresh': str(refresh),
             'access': access,
             'user': serializer.data
+
         }, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -143,8 +148,8 @@ def request_password_reset(request):
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    reset_link = generate_password_reset_link(user)
-    send_reset_email(user, reset_link)
+
+    send_reset_email(user)
 
     return Response({'message': 'Password reset link sent to your email'}, status=status.HTTP_200_OK)
 
@@ -273,7 +278,7 @@ def test_auth(request):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
-def googleOauthLogin(request):
+def googleoauthlogin(request):
     id_token_data = request.data.get('id_token')  # Use ID token, not refresh token
 
     if not id_token_data:
@@ -305,3 +310,38 @@ def googleOauthLogin(request):
 
     except ValueError as e:
         return Response({'error': 'Invalid token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="Verify email",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'token': openapi.Schema(type=openapi.TYPE_STRING, description="Token")},
+        required=['token'],
+    )
+)
+@api_view(['GET'])
+def verify_email(request, token):
+    """Verify email using the token sent via email."""
+    try:
+        # Decode the JWT token
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user = User.objects.get(id=payload['user_id'])
+
+        if user.is_active:
+            return Response({'message': 'Email already verified.'}, status=status.HTTP_200_OK)
+
+        # Activate the user
+        user.is_active = True
+        user.save()
+
+        return Response({'message': 'Email verified successfully! You can now log in.'}, status=status.HTTP_200_OK)
+
+    except jwt.ExpiredSignatureError:
+        return Response({'error': 'Verification link expired. Please request a new one.'}, status=status.HTTP_400_BAD_REQUEST)
+    except jwt.DecodeError:
+        return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_400_BAD_REQUEST)
+

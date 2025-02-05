@@ -37,7 +37,7 @@ urlpatterns = [
 
     path('logout',views.logout),
 
-    path('google-login', views.googleOauthLogin),
+    path('google-login', views.googleoauthlogin),
 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger-ui'),
 
