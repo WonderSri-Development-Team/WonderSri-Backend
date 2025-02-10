@@ -38,6 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'WonderSri_backend',
+    'locations',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -77,11 +81,11 @@ WSGI_APPLICATION = 'WonderSri_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('dbname'),
-        'USER': config('user'),
-        'PASSWORD': config('password'),
-        'HOST': config('host'),
-        'PORT': config('port', cast=int),
+        'NAME': 'locations_db',
+        'USER': 'testuser',
+        'PASSWORD': 'abc123',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
