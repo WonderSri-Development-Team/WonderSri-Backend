@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-5!$46%z#h9+ni4c!i77w-x=@5+(q2xhe8cuz_if+r__v0$wa7p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["https://wondersri-backend.onrender.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["wondersri-backend.onrender.com", "localhost", "127.0.0.1"]
 
 
 # Application definition
