@@ -16,20 +16,23 @@ def send_reset_email(user):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     reset_link = f"http://127.0.0.1:8000/auth/reset-password/{uid}/{token}/"
 
-    email_subject = "Password Reset Request - WonderSri"
-    email_message = (
-        f"Hello {user.username},\n\n"
-        "We received a request to reset your password. Please click the link below to reset it:\n\n"
-        f"{reset_link}\n\n"
-        "If you did not request a password reset, please ignore this email.\n\n"
-        "Best regards,\nThe WonderSri Team"
-    )
-    send_mail(
-        email_subject,
-        email_message,
-        settings.EMAIL_HOST_USER,
-        [user.email],
-    )
+    email_subject = "WonderSri - Reset Your Password"
+    subject = "Reset your password"
+    from_email = "WonderSri <wondersriteam@gmail.com>"
+    to_email = user.email
+
+    # Render the HTML template with context
+    html_message = render_to_string('password_reset_email.html', {
+        'user': user,
+        'verification_link': reset_link
+    })
+
+    # Create the email
+    email = EmailMultiAlternatives(subject, '', from_email, [to_email])
+    email.attach_alternative(html_message, "text/html")
+
+    # Send the email
+    email.send()
 
 def send_email_verification_email(user):
     """
@@ -41,7 +44,7 @@ def send_email_verification_email(user):
 
     email_subject = "WonderSri Verification"
     subject = "Verify Your Email Address"
-    from_email = "Your App <your_email@gmail.com>"
+    from_email = "WonderSri <wondersriteam@gmail.com>"
     to_email = user.email
 
     # Render the HTML template with context

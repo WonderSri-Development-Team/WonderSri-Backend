@@ -121,110 +121,6 @@ def signup(request):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-@swagger_auto_schema(
-    method='post',
-    operation_description="Request a password reset link via email",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={'email': openapi.Schema(type=openapi.TYPE_STRING, description="User email")},
-        required=['email'],
-    ),
-    responses={
-        200: "Password reset link sent successfully",
-        400: "Bad Request (Email required)",
-        404: "User not found"
-    }
-)
-@api_view(['POST'])
-def request_password_reset(request):
-    """Generate password reset link and send email."""
-    email = request.data.get('email')
-    if not email:
-        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
-    send_reset_email(user)
-
-    return Response({'message': 'Password reset link sent to your email'}, status=status.HTTP_200_OK)
-
-
-@swagger_auto_schema(
-    method='post',
-    operation_description="Reset password using token",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={'password': openapi.Schema(type=openapi.TYPE_STRING, description="New password")},
-        required=['password'],
-    ),
-    responses={
-        200: "Password reset successful",
-        400: "Bad Request (Invalid token or password missing)",
-        404: "User not found"
-    }
-)
-@api_view(['POST'])
-def reset_password(request, user_id, token):
-    """Reset user password using the provided token."""
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    if not default_token_generator.check_token(user, token):
-        return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
-
-    new_password = request.data.get('password')
-    if not new_password:
-        return Response({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    user.set_password(new_password)
-    user.save()
-
-    return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
-
-
-@swagger_auto_schema(
-    method='post',
-    operation_description="Change password for logged-in user",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'old_password': openapi.Schema(type=openapi.TYPE_STRING, description="Current password"),
-            'new_password': openapi.Schema(type=openapi.TYPE_STRING, description="New password"),
-        },
-        required=['old_password', 'new_password'],
-    ),
-    responses={
-        200: "Password updated successfully",
-        400: "Bad Request (Incorrect old password or missing fields)"
-    }
-)
-@api_view(['POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-def change_password(request):
-    """Allow logged-in users to change their password."""
-    user = request.user
-    old_password = request.data.get('old_password')
-    new_password = request.data.get('new_password')
-
-    if not old_password or not new_password:
-        return Response({'error': 'Old password and new password are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    if not user.check_password(old_password):
-        return Response({'error': 'Incorrect old password'}, status=status.HTTP_400_BAD_REQUEST)
-
-    user.set_password(new_password)
-    user.save()
-
-    return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
-
 @swagger_auto_schema(
     method='post',
     operation_description="Logout the user",
@@ -345,3 +241,136 @@ def verify_email(request, token):
     except User.DoesNotExist:
         return Response({'error': 'User not found.'}, status=status.HTTP_400_BAD_REQUEST)
 
+"""
+USER MANAGEMENT 
+"""
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Change username",
+    request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'username': openapi.Schema(type=openapi.TYPE_STRING, description="New username")
+    },
+    required=['username'],
+)
+)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def change_username(request):
+    username = request.data.get('username')
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user.username = username
+    user.save()
+    return Response({'message': 'Username changed successfully.'}, status=status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Request a password reset link via email",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={'email': openapi.Schema(type=openapi.TYPE_STRING, description="User email")},
+        required=['email'],
+    ),
+    responses={
+        200: "Password reset link sent successfully",
+        400: "Bad Request (Email required)",
+        404: "User not found"
+    }
+)
+@api_view(['POST'])
+def request_password_reset(request):
+    """Generate password reset link and send email."""
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+    send_reset_email(user)
+
+    return Response({'message': 'Password reset link sent to your email'}, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Reset password using token",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={'password': openapi.Schema(type=openapi.TYPE_STRING, description="New password")},
+        required=['password'],
+    ),
+    responses={
+        200: "Password reset successful",
+        400: "Bad Request (Invalid token or password missing)",
+        404: "User not found"
+    }
+)
+@api_view(['POST'])
+def reset_password(request, token):
+    """Reset user password using the provided token."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user = User.objects.get(id=payload['user_id'])
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not default_token_generator.check_token(user, token):
+        return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
+
+    new_password = request.data.get('password')
+    if not new_password:
+        return Response({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user.set_password(new_password)
+    user.save()
+
+    return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Change password for logged-in user",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'old_password': openapi.Schema(type=openapi.TYPE_STRING, description="Current password"),
+            'new_password': openapi.Schema(type=openapi.TYPE_STRING, description="New password"),
+        },
+        required=['old_password', 'new_password'],
+    ),
+    responses={
+        200: "Password updated successfully",
+        400: "Bad Request (Incorrect old password or missing fields)"
+    }
+)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """Allow logged-in users to change their password."""
+    user = request.user
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+
+    if not old_password or not new_password:
+        return Response({'error': 'Old password and new password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not user.check_password(old_password):
+        return Response({'error': 'Incorrect old password'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user.set_password(new_password)
+    user.save()
+
+    return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
