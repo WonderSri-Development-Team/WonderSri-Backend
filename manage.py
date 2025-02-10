@@ -15,7 +15,8 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    execute_from_command_line(sys.argv)
+    port = os.getenv("PORT", "8000")  # Use Render's PORT or default to 8000
+    execute_from_command_line(["manage.py", "runserver", f"0.0.0.0:{port}"])
 
 
 if __name__ == '__main__':
