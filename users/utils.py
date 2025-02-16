@@ -14,7 +14,7 @@ def send_reset_email(user):
     """
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    reset_link = f"http://127.0.0.1:8000/auth/reset-password/{uid}/{token}/"
+    reset_link = f"https://wondersri-backend.onrender.com/auth/reset-password/{uid}/{token}/"
 
     email_subject = "WonderSri - Reset Your Password"
     subject = "Reset your password"
@@ -40,7 +40,7 @@ def send_email_verification_email(user):
     """
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    verification_link = f"http://127.0.0.1:8000/auth/verify/{uid}/{token}/"
+    verification_link = f"https://wondersri-backend.onrender.com/auth/verify-email/{uid}/{token}/"
 
     email_subject = "WonderSri Verification"
     subject = "Verify Your Email Address"
