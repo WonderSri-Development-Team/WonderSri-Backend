@@ -22,14 +22,12 @@ from users import views
 
 
 urlpatterns = [
-
-
     path('login',views.login),
 
     re_path('signup',views.signup),
     path('request-password-reset',views.request_password_reset),
 
-    re_path(r'^reset-password/(?P<user_id>\d+)/(?P<token>.+)/$', views.reset_password, name='reset-password'),
+    path('reset-password/<str:uidb64>/<str:token>/', views.reset_password, name='reset-password'),
 
     path('change-password',views.change_password),
 
@@ -45,6 +43,6 @@ urlpatterns = [
 
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='swagger-schema'),
 
-    path('auth/verify-email/<str:uidb64>/<str:token>/', views.verify_email, name='verify_email'),
+    path('verify-email/<str:uidb64>/<str:token>/', views.verify_email, name='verify_email'),
 
 ]

@@ -24,7 +24,7 @@ def send_reset_email(user):
     # Render the HTML template with context
     html_message = render_to_string('password_reset_email.html', {
         'user': user,
-        'verification_link': reset_link
+        'reset_link': reset_link
     })
 
     # Create the email
@@ -41,6 +41,8 @@ def send_email_verification_email(user):
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     verification_link = f"https://wondersri-backend.onrender.com/auth/verify-email/{uid}/{token}/"
+
+    print(verification_link)
 
     email_subject = "WonderSri Verification"
     subject = "Verify Your Email Address"

@@ -1,4 +1,8 @@
+from http.client import responses
+
 import jwt
+from decouple import config
+from django.utils.http import urlsafe_base64_decode
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,6 +18,8 @@ from .utils import send_reset_email, send_email_verification_email
 from .serializers import UserSerializer
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from django.contrib.auth import get_user_model
+from django.utils.encoding import force_str
 
 # Ensure emails are unique
 User._meta.get_field('email')._unique = True
@@ -65,26 +71,28 @@ def login(request):
     try:
         user = User.objects.get(email=email)
 
-        # Check if the email is verified
-        if not user.is_active:
-            return Response({'error': 'Please verify your email before logging in.'}, status=status.HTTP_403_FORBIDDEN)
-
+        # Check if the password is correct first
         if not user.check_password(password):
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    except User.DoesNotExist:
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        # Ensure email is verified (assuming you have an is_verified field)
+        if not user.is_active:  # Adjust this if you're using a different field
+            return Response({'error': 'Please verify your email before logging in.'}, status=status.HTTP_403_FORBIDDEN)
 
-    # Generate JWT tokens
+    except User.DoesNotExist:
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)  # Prevent user enumeration
+
+    # ✅ Generate JWT tokens ONLY after all checks pass
     refresh = RefreshToken.for_user(user)
     serializer = UserSerializer(instance=user)
-    access = str(refresh.access_token)
 
     return Response({
         'refresh': str(refresh),
-        'access': access,
+        'access': str(refresh.access_token),
         'user': serializer.data
     }, status=status.HTTP_200_OK)
+
+
 
 
 @swagger_auto_schema(
@@ -93,7 +101,7 @@ def login(request):
     request_body=UserSerializer,
     responses={
         201: openapi.Response(description="User registered successfully", schema=auth_response_schema),
-        400: "Bad Request (Invalid data)"
+        400: "Bad Request (Invalid data or user already exists)"
     }
 )
 @api_view(['POST'])
@@ -102,9 +110,17 @@ def signup(request):
     serializer = UserSerializer(data=request.data)
 
     if serializer.is_valid():
+        email = serializer.validated_data.get('email')
+        username = serializer.validated_data.get('username')
+
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'A user with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'A user with this username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.save()
-        user.is_active = False  #Prevents log in without verifying
+        user.is_active = False
         user.save()
 
         refresh = RefreshToken.for_user(user)
@@ -115,12 +131,9 @@ def signup(request):
         return Response({
             'refresh': str(refresh),
             'access': access,
-            'user': serializer.data
-
-        }, status=status.HTTP_201_CREATED)
+            'user': serializer.data}, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 @swagger_auto_schema(
     method='post',
     operation_description="Logout the user",
@@ -218,28 +231,25 @@ def googleoauthlogin(request):
     )
 )
 @api_view(['GET'])
-def verify_email(request, token):
-    """Verify email using the token sent via email."""
+def verify_email(request, uidb64, token):
+    """
+    View to handle email verification links.
+    """
     try:
-        # Decode the JWT token
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        user = User.objects.get(id=payload['user_id'])
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = get_user_model().objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist):
+        user = None
 
-        if user.is_active:
-            return Response({'message': 'Email already verified.'}, status=status.HTTP_200_OK)
-
-        # Activate the user
+    if user is not None and default_token_generator.check_token(user, token):
+        # Token is valid, activate the user
         user.is_active = True
         user.save()
-
-        return Response({'message': 'Email verified successfully! You can now log in.'}, status=status.HTTP_200_OK)
-
-    except jwt.ExpiredSignatureError:
-        return Response({'error': 'Verification link expired. Please request a new one.'}, status=status.HTTP_400_BAD_REQUEST)
-    except jwt.DecodeError:
-        return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
-    except User.DoesNotExist:
-        return Response({'error': 'User not found.'}, status=status.HTTP_400_BAD_REQUEST)
+        # You can redirect to a success page here
+        return Response({'message': 'Email verification successful'}, status=status.HTTP_200_OK)
+    else:
+        # Invalid token or user
+        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 """
 USER MANAGEMENT 
@@ -297,7 +307,6 @@ def request_password_reset(request):
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-
     send_reset_email(user)
 
     return Response({'message': 'Password reset link sent to your email'}, status=status.HTTP_200_OK)
@@ -318,25 +327,26 @@ def request_password_reset(request):
     }
 )
 @api_view(['POST'])
-def reset_password(request, token):
+def reset_password(request, uidb64, token):
     """Reset user password using the provided token."""
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        user = User.objects.get(id=payload['user_id'])
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = get_user_model().objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist):
+        return Response({'error': 'Invalid user ID'}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not default_token_generator.check_token(user, token):
-        return Response({'error': 'Invalid or expired token'}, status=status.HTTP_400_BAD_REQUEST)
+    if user and default_token_generator.check_token(user, token):
+        new_password = request.data.get('password')
 
-    new_password = request.data.get('password')
-    if not new_password:
-        return Response({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
+        # Validate password (Ensure it's not empty)
+        if not new_password:
+            return Response({'error': 'Password is missing'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user.set_password(new_password)
-    user.save()
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
 
-    return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
+    return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(

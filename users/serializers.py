@@ -2,9 +2,9 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 
-
-
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'password', 'last_name', 'first_name']
@@ -12,11 +12,26 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},  # Ensure password is write-only
         }
 
+    def validate_email(self, value):
+        """
+        Ensure the email is unique (case insensitive).
+        """
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value
+
+    def validate_username(self, value):
+        """
+        Ensure the username is unique (case insensitive).
+        """
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("A user with this username already exists.")
+        return value
+
     def validate_password(self, value):
         """
         Validate the password to ensure it meets certain complexity requirements.
         """
-        # Minimum length check
         if len(value) < 8:
             raise ValidationError("Password must be at least 8 characters long.")
         return value
