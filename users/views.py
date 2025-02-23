@@ -1,9 +1,6 @@
-from http.client import responses
-
-import jwt
-from decouple import config
 from django.utils.http import urlsafe_base64_decode
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -184,8 +181,6 @@ def test_auth(request):
         '400': openapi.Response(description="Bad Request")
     }
 )
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
 @api_view(['POST'])
 def googleoauthlogin(request):
     id_token_data = request.data.get('id_token')  # Use ID token, not refresh token
@@ -223,12 +218,10 @@ def googleoauthlogin(request):
 @swagger_auto_schema(
     method='get',
     operation_description="Verify email",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'token': openapi.Schema(type=openapi.TYPE_STRING, description="Token")},
-        required=['token'],
-    )
+    responses={
+        200: "Email verification successful",
+        400: "Invalid token",
+    }
 )
 @api_view(['GET'])
 def verify_email(request, uidb64, token):
@@ -384,3 +377,81 @@ def change_password(request):
     user.save()
 
     return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Change email for logged-in user",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description="New email"),},
+        required=['email'],
+    ),
+    responses={
+        200: "Email changed successfully",
+        400: "Bad Request (Email missing)",
+        409: "Email already registered",
+    }
+)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def change_email(request):
+    email = request.data.get('email')
+
+    if not email:
+        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Check if email already exists
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'Email already exists'}, status=status.HTTP_409_CONFLICT)
+
+        # Validate email format
+        user = request.user
+        user.email = email
+        user.full_clean()
+        user.save()
+
+    except ValidationError:
+        return Response({'error': 'Invalid email format'}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({'message': 'Email changed successfully'}, status=status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='delete',
+    operation_description="Delete account for logged-in user",
+    responses={
+        204: "Account deleted successfully",
+        401: "Unauthorized",
+    }
+)
+@api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_account(request):
+    try:
+        user = request.user
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        return Response({'error': 'Failed to delete account.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_description="Getting account details for logged-in user",
+    responses={
+        200: "Information read!",
+        401: "Unauthorized",
+    }
+)
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_account(request):
+    user = request.user
+
+    return Response({'username': user.username, 'email': user.email}, status=status.HTTP_200_OK)
+
+

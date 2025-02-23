@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'dj_rest_auth',
     'social_django',
+    'location'
 ]
 
 AUTHENTICATION_BACKENDS = (
