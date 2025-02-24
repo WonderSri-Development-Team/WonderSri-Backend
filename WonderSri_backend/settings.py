@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
+#import dj_database_url
 
 # Load .env file
 load_dotenv()
@@ -101,12 +101,23 @@ ASGI_APPLICATION = 'WonderSri_backend.asgi.application'
 #         engine="django.contrib.gis.db.backends.postgis",
 #     )
 # }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'geofenceDB',
+        'USER': 'postgres',
+        'PASSWORD': 'klnp.2005',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 
 

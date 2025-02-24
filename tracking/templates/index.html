@@ -49,7 +49,7 @@
             }
 
             socket.onmessage = function(e) {
-                console.log(e);
+                //console.log(e);
                 data = JSON.parse(e.data)
                 if (data.type == 'connection') {
                     console.log(data.status);
@@ -138,9 +138,15 @@
                         googleMapUrl = `https://www.google.com/maps?q=${latitude},${longitude}&hl=es;z=14&output=embed`;
                         
                         //document.getElementById('map-frame').src = googleMapUrl;
-                        console.log("Latitude: " + position.coords.latitude);
-                        console.log("Longitude: " + position.coords.longitude);
-                        console.log('Accuracy (in meters):', position.coords.accuracy);
+                        //console.log("Latitude: " + position.coords.latitude);
+                        //console.log("Longitude: " + position.coords.longitude);
+                        //console.log('Accuracy (in meters):', position.coords.accuracy);
+
+                        socket.send(JSON.stringify({
+                            'type': 'location',
+                            'latitude': position.coords.latitude,
+                            'longitude': position.coords.longitude
+                        }))
     
                     },
                     function (error) {
