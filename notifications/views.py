@@ -16,6 +16,18 @@ class RegisterDeviceView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+class SendNotificationView(APIView):
+    def post(self, request):
+        registration_id = request.data.get('registration_id')
+        title = request.data.get('title', 'Default Title')
+        body = request.data.get('body', 'Default Body')
+
+        if not registration_id:
+            return Response({'error': 'Registration ID is required'}),
+        result = send_push_notifications(registration_id, title, body)
+        return Response(result, status=status.HTTP_200_OK)
+
 def notify_user(user, title, body):
     devices = Device.objects.filter(user=user)
     for device in devices:

@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('locations.urls')),
+    # path('api/', include('locations.urls')),
+    path('send-notification/', SendNotificationView.as_view(), name='sendd_notification'),
 ]

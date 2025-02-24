@@ -38,9 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'WonderSri_backend',
-    'locations',
+    'rest_framework',
+    'fcm_django',
+    # 'locations',
     'channels',
 ]
 
