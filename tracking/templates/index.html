@@ -56,7 +56,7 @@
                 }
                 else if (data.type == 'location'){
                     console.log(
-                        `latitude : ${data.latitude} \nlongitude : ${data.longitude}`
+                        `latitude : ${data.latitude} \nlongitude : ${data.longitude} \n in_geofence : ${data.in_geofence}`
                     )
                 }
                 else{
@@ -135,9 +135,10 @@
                     function (position) {
                         latitude = position.coords.latitude;
                         longitude = position.coords.longitude;
+            
                         googleMapUrl = `https://www.google.com/maps?q=${latitude},${longitude}&hl=es;z=14&output=embed`;
                         
-                        //document.getElementById('map-frame').src = googleMapUrl;
+                        document.getElementById('map-frame').src = googleMapUrl;
                         //console.log("Latitude: " + position.coords.latitude);
                         //console.log("Longitude: " + position.coords.longitude);
                         //console.log('Accuracy (in meters):', position.coords.accuracy);
