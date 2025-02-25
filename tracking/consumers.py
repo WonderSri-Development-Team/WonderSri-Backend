@@ -1,6 +1,6 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-from .service import check_geofence
+from .service import check_geofence, all_one
 
 class locationConsumer(AsyncWebsocketConsumer):
 
@@ -17,18 +17,20 @@ class locationConsumer(AsyncWebsocketConsumer):
         print(text_data)
         data = json.loads(text_data)
         if data.get('type') == 'location':
-            print(data.get('type'))
             latitude = data.get('latitude')
             longitude = data.get('longitude')
-            in_geofence = check_geofence(longitude=longitude, latitude=latitude)
-            #print(in_geofence)
+            # latitude = 7.089953576246863
+            # longitude = 79.88710594626576
+            #all_geofences = await all_one()
+            in_geofence = await check_geofence(longitude=longitude, latitude=latitude)
+            print(in_geofence)
             await self.send(json.dumps({
             'type': 'location',
             'latitude': latitude,
             'longitude': longitude,
+            'in_geofence' : in_geofence
             }))
         elif data.get('type') == 'connection':
-            print(data.get('type'))
             await self.send(json.dumps({
                 'type': data.get('type'),
                 'status': data.get('status')
