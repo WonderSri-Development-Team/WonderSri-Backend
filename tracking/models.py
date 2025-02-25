@@ -20,4 +20,4 @@ class Geofence(models.Model):
     name = models.CharField(max_length=100)
     geojson = models.JSONField()  # Store coordinates as GeoJSON
     radius = models.FloatField(help_text="Radius in meters")
-
+    details = models.TextField(blank=True, null=True)
