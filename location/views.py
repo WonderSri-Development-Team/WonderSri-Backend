@@ -30,18 +30,18 @@ def list_nearby_events(request):
         user_longitude = float(user_longitude)
         radius = float(radius)
     except (TypeError, ValueError):
-        return Response({'error': 'Invalid latitude, longitude, or radius.'}, status=400)
+        return Response({'error': 'Invalid latitude, longitude, or radius.'}, status=status.HTTP_400_BAD_REQUEST)
 
     user_location = Point(user_longitude, user_latitude, srid=4326)
 
     nearby_events = Event.objects.annotate(
-        distance=Distance('location__coordinates', user_location)
+        distance=Distance('venue__location__coordinates', user_location)  # Ensure correct field reference
     ).filter(
         distance__lte=radius
     ).order_by('distance')
 
     serializer = EventSerializer(nearby_events, many=True)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @swagger_auto_schema(
     method='post',
