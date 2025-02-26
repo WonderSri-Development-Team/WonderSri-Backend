@@ -1,3 +1,4 @@
+from bson.json_util import default
 from django.contrib.gis.geos import Point
 from django.db import models
 from django.contrib.gis.db import models as gis_models
@@ -9,7 +10,8 @@ class Location(models.Model):
     coordinates = gis_models.PointField(geography=True, spatial_index=True, default=Point(0.0, 0.0))  # ✅ Default Point (0,0)
     radius = models.PositiveIntegerField(
         help_text="Radius in meters for triggering notifications",
-        validators=[MinValueValidator(1)]  # ✅ Ensuring positive radius
+        validators=[MinValueValidator(1)],
+        default=100  # ✅ Provide a sensible default value
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -56,7 +58,6 @@ class Event(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events', null=True, blank=True)
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='events', null=True, blank=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     price = models.DecimalField(
