@@ -1,15 +1,44 @@
-from rest_framework import serializers
+from django.contrib.gis.geos import Point
 from .models import Event, Venue, Location
+from rest_framework import serializers
+from .models import Venue, Location  # Adjust the import according to your models
 
 class LocationSerializer(serializers.ModelSerializer):
+    longitude = serializers.FloatField(write_only=True)  # Explicitly expecting these fields
+    latitude = serializers.FloatField(write_only=True)
+
     class Meta:
         model = Location
-        fields = ['id', 'name', 'coordinates', 'radius']
+        fields = ('name', 'radius', 'longitude', 'latitude')
+
+    def create(self, validated_data):
+        print("Location Validated Data:", validated_data)  # Debugging
+        coordinates = Point(validated_data.pop('longitude'), validated_data.pop('latitude'))
+        validated_data['coordinates'] = coordinates  # Add Point field
+        return super().create(validated_data)
 
 class VenueSerializer(serializers.ModelSerializer):
+    location = LocationSerializer()
+
     class Meta:
         model = Venue
-        fields = ['id', 'name', 'venue_type', 'location', 'description', 'opening_hours', 'contact_info', 'website', 'is_active']
+        fields = '__all__'
+
+    def create(self, validated_data):
+        location_data = validated_data.pop('location', None)
+        if not location_data:
+            raise serializers.ValidationError({"location": "Location data is missing."})
+
+        location_instance = Location.objects.create(
+            name=location_data['name'],
+            radius=location_data['radius'],
+            coordinates=Point(location_data['longitude'], location_data['latitude'])  # Ensure coordinates are stored
+        )
+
+        venue = Venue.objects.create(location=location_instance, **validated_data)
+        return venue
+
+
 
 class EventSerializer(serializers.ModelSerializer):
     location = LocationSerializer(required=False)  # Optional nested location

@@ -6,7 +6,8 @@ from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 from .models import Event, Venue, Location
-from .serializers import EventSerializer
+from .serializers import EventSerializer, VenueSerializer
+
 
 @swagger_auto_schema(
     method='GET',
@@ -64,6 +65,30 @@ def create_event(request):
         # Save the event (including nested location and venue)
         event = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Create a new venue",
+    request_body=VenueSerializer,
+    responses={
+        201: VenueSerializer,
+        400: "Bad Request",
+    }
+)
+@api_view(['POST'])
+def create_venue(request):
+    """
+    Create a new venue.
+    """
+    serializer = VenueSerializer(data=request.data)
+
+
+    if serializer.is_valid():
+        venue = serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -1,4 +1,8 @@
 from django.urls import path
 from location import views
-from users.urls import urlpatterns
+
+urlpatterns = [
+    path('venue',views.create_venue),
+    path('event',views.create_event),
+]
 
