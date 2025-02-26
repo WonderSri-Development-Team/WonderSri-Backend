@@ -30,6 +30,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["wondersri-backend.onrender.com", "localhost", "127.0.0.1"]
 
+GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
+
 
 # Application definition
 
@@ -40,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
@@ -99,7 +102,7 @@ WSGI_APPLICATION = 'WonderSri_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': config('dbname'),
         'USER': config('user'),
         'PASSWORD': config('password'),
