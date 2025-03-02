@@ -8,11 +8,22 @@ def sync_check_geofence(longitude, latitude):
     user_location = Point(longitude, latitude,  srid=4326) # 5234 - SriLanka (Kandawala / Sri Lanka Grid , 4326 - World Geodetic System 1984
     return Geofence.objects.filter(area__intersects=user_location)
     
+    
+def sync_nearby_geofence(longitude, latitude):
+    user_point = Point(longitude, latitude, srid=4326)
+    nearby_geofences = Geofence.objects.filter(
+        location__distance_lte=(user_point, Distance(m=100))
+    ).exclude(
+        area__intersects=user_point  # exclude current geofence
+    )
+    return nearby_geofences
+
 async def check_geofence(longitude, latitude):
     current_geofences = await database_sync_to_async(sync_check_geofence)(longitude, latitude)
-    
+    nearby_geofences = await database_sync_to_async(sync_nearby_geofence)(longitude, latitude)
     return {
         'current_geofences': current_geofences,
+        'nearby_geofences': nearby_geofences
     }
 
 
