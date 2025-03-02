@@ -2,7 +2,18 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import Distance
 from channels.db import database_sync_to_async
 from .models import Geofence
-from django.db import connection
+
+def sync_check_geofence(longitude, latitude):
+    # 7.089953576246863, 79.88710594626576
+    user_location = Point(longitude, latitude,  srid=4326) # 5234 - SriLanka (Kandawala / Sri Lanka Grid , 4326 - World Geodetic System 1984
+    return Geofence.objects.filter(area__intersects=user_location)
+    
+async def check_geofence(longitude, latitude):
+    current_geofences = await database_sync_to_async(sync_check_geofence)(longitude, latitude)
+    
+    return {
+        'current_geofences': current_geofences,
+    }
 
 
 # Geofence.objects.create(
@@ -11,22 +22,22 @@ from django.db import connection
 #     radius=500  # Radius in meters
 # )
 
-def all_sync():
-    query = """
-    SELECT *
-    FROM tracking_geofence
-    """
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(query)
-            return cursor.fetchall()
-    except Exception as e:
-        print(f"Error checking geofence: {e}")
-        return []
+# def all_sync():
+#     query = """
+#     SELECT *
+#     FROM tracking_geofence
+#     """
+#     try:
+#         with connection.cursor() as cursor:
+#             cursor.execute(query)
+#             return cursor.fetchall()
+#     except Exception as e:
+#         print(f"Error checking geofence: {e}")
+#         return []
     
 
-async def all_one():
-    return await database_sync_to_async(all_sync)()
+# async def all_one():
+#     return await database_sync_to_async(all_sync)()
 
 # query = """
     # SELECT *
