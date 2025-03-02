@@ -1,5 +1,5 @@
-from django.db import models
-# from django.contrib.gis.db import models
+#from django.db import models
+from django.contrib.gis.db import models
 
 
 # class Geofence(models.Model):
@@ -17,7 +17,7 @@ from django.db import models
 #         super(Geofence, self).save(*args, **kwargs)
 
 class Geofence(models.Model):
-    name = models.CharField(max_length=100)
-    geojson = models.JSONField()  # Store coordinates as GeoJSON
-    radius = models.FloatField(help_text="Radius in meters")
-    details = models.TextField(blank=True, null=True)
+    name = models.CharField(max_length=255)
+    location = models.PointField() 
+    radius = models.FloatField()    # Radius in meters
+    description = models.TextField(blank=True, null=True)

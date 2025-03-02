@@ -1,36 +1,8 @@
-from django.db import connection
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import Distance
 from channels.db import database_sync_to_async
-
-def sync_check_geofence(longitude, latitude):
-    # 7.089953576246863, 79.88710594626576
-    query = """
-    SELECT *
-    FROM tracking_geofence
-    WHERE ST_DWithin(
-        ST_GeomFromGeoJSON(geojson)::geography,
-        ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography,
-        radius
-    )
-    """
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(query, [longitude, latitude])
-            return cursor.fetchall()
-    except Exception as e:
-        print(f"Error checking geofence: {e}")
-        return []
-    
-
-async def check_geofence(longitude, latitude):
-    return await database_sync_to_async(sync_check_geofence)(longitude, latitude)
-    
-
-    # user_location = Point(longitude, latitude,  srid=4326) # 5234 - SriLanka (Kandawala / Sri Lanka Grid / 4326 - World Geodetic System 1984
-    # return Geofence.objects.filter(area_intersects = user_location)
-
-
-# Geofence.objects.annotate(distance=Distance('center', user_location)).order_by('distance').first()
-# return nerarby geofences
+from .models import Geofence
+from django.db import connection
 
 
 # Geofence.objects.create(
@@ -55,3 +27,20 @@ def all_sync():
 
 async def all_one():
     return await database_sync_to_async(all_sync)()
+
+# query = """
+    # SELECT *
+    # FROM tracking_geofence
+    # WHERE ST_DWithin(
+    #     ST_GeomFromGeoJSON(geojson)::geography,
+    #     ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography,
+    #     radius
+    # )
+    # """
+    # try:
+    #     with connection.cursor() as cursor:
+    #         cursor.execute(query, [longitude, latitude])
+    #         return cursor.fetchall()
+    # except Exception as e:
+    #     print(f"Error checking geofence: {e}")
+    #     return []
