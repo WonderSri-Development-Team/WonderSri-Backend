@@ -1,4 +1,4 @@
-from bson.json_util import default
+
 from django.contrib.gis.geos import Point
 from django.db import models
 from django.contrib.gis.db import models as gis_models
@@ -69,3 +69,13 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.venue.name if self.venue else 'No Venue'}"
+
+
+class Activities(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='activities', null=True, blank=True)
+    operating_hours = models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.title}"

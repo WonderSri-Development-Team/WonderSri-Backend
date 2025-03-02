@@ -5,8 +5,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
-from .models import Event, Venue, Location
-from .serializers import EventSerializer, VenueSerializer
+from .models import Event, Venue, Location, Activities
+from .serializers import EventSerializer, VenueSerializer, ActivitiesSerializer
 
 
 @swagger_auto_schema(
@@ -90,6 +90,48 @@ def create_venue(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@swagger_auto_schema(
+    method='get',
+    responses={
+        200: ActivitiesSerializer,
+        400: "Bad Request",
+    }
+)
+  # Ensure you create this serializer
+@api_view(['GET'])
+def list_activities(request):
+    """
+    List activities around a specific location.
+    """
+    venue_id = request.GET.get('venue_id')
+    if venue_id:
+        activities = Activities.objects.filter(venue_id=venue_id)
+    else:
+        activities = Activities.objects.all()  # Return all activities if no filter is applied
+
+    serializer = ActivitiesSerializer(activities, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='post',
+    request_body=ActivitiesSerializer,
+    responses={
+        201: ActivitiesSerializer,
+        400: "Bad Request",
+    }
+)
+@api_view(['POST'])
+def create_activity(request):
+    """
+    Create a new activity.
+    """
+    serializer = ActivitiesSerializer(data=request.data)
+    if serializer.is_valid():
+        activity = serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 

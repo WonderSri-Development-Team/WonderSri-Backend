@@ -1,9 +1,8 @@
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
-
-from .models import Event, Venue, Location
+from .models import Event
 from rest_framework import serializers
-from .models import Venue, Location  # Adjust the import according to your models
+from .models import Venue, Location, Activities  # Adjust the import according to your models
 
 class LocationSerializer(serializers.ModelSerializer):
     longitude = serializers.FloatField(write_only=True)  # Explicitly expecting these fields
@@ -40,12 +39,6 @@ class VenueSerializer(serializers.ModelSerializer):
         venue = Venue.objects.create(location=location_instance, **validated_data)
         return venue
 
-
-
-from rest_framework import serializers
-from django.shortcuts import get_object_or_404
-from .models import Event, Venue
-
 class EventSerializer(serializers.ModelSerializer):
     venue_id = serializers.IntegerField(write_only=True, required=False)  # Add venue_id for input
 
@@ -64,4 +57,12 @@ class EventSerializer(serializers.ModelSerializer):
         # Create the event
         event = Event.objects.create(**validated_data)
         return event
+class ActivitiesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Activities
+        fields = '__all__'  # Or specify the fields you want to include
+
+
+
+
 
