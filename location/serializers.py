@@ -1,6 +1,6 @@
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
-from .models import Event
+from .models import Event, Food
 from rest_framework import serializers
 from .models import Venue, Location, Activities  # Adjust the import according to your models
 
@@ -60,7 +60,12 @@ class EventSerializer(serializers.ModelSerializer):
 class ActivitiesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Activities
-        fields = '__all__'  # Or specify the fields you want to include
+        fields = '__all__'
+
+class FoodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Food
+        fields = '__all__'
 
 
 
