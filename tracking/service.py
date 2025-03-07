@@ -26,6 +26,9 @@ async def check_geofence(longitude, latitude):
         'nearby_geofences': nearby_geofences
     }
 
+async def nearBy_geofence(longitude, latitude):
+    return await database_sync_to_async(sync_nearby_geofence)(longitude, latitude) 
+
 
 # Geofence.objects.create(
 #     name="Central Park",
