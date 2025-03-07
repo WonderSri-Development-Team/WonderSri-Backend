@@ -21,3 +21,10 @@ class Geofence(models.Model):
     location = models.PointField() 
     radius = models.FloatField()    # Radius in meters
     description = models.TextField(blank=True, null=True)
+
+class SubGeofence(models.Model):
+    name = models.CharField(max_length=255)
+    main_geofence = models.OneToOneField(Geofence, on_delete=models.CASCADE, related_name='sub_geofence')
+    location = models.PointField()
+    radius = models.FloatField()
+    description = models.TextField(blank=True, null=True)
