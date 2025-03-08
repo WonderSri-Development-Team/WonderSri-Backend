@@ -25,6 +25,6 @@ class MainGeofence(models.Model):
 class SubGeofence(models.Model):
     name = models.CharField(max_length=255)
     main_geofence = models.ForeignKey(MainGeofence, on_delete=models.CASCADE, related_name='sub_geofence')
-    location = models.PointField()
+    location = models.PointField(geography=True, srid=4326)
     radius = models.FloatField()
     description = models.TextField(blank=True, null=True)
