@@ -27,7 +27,7 @@ GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 GDAL_LIBRARY_PATH = os.getenv("GDAL_LIBRARY_PATH")
-#GEOS_LIBRARY_PATH = r"C:/OSGeo4W/bin/geos_c.dll"
+GEOS_LIBRARY_PATH = r'C:/OSGeo4W/bin/geos_c.dll'
 
 
 # Quick-start development settings - unsuitable for production

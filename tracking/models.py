@@ -16,15 +16,15 @@ from django.contrib.gis.db import models
 #         self.area = self.location.buffer(buffer_distance)
 #         super(Geofence, self).save(*args, **kwargs)
 
-class Geofence(models.Model):
-    name = models.CharField(max_length=255)
-    location = models.PointField() 
+class MainGeofence(models.Model):
+    name = models.CharField(max_length=200)
+    location = models.PointField(geography=True, srid=4326) 
     radius = models.FloatField()    # Radius in meters
     description = models.TextField(blank=True, null=True)
 
 class SubGeofence(models.Model):
     name = models.CharField(max_length=255)
-    main_geofence = models.OneToOneField(Geofence, on_delete=models.CASCADE, related_name='sub_geofence')
+    main_geofence = models.ForeignKey(MainGeofence, on_delete=models.CASCADE, related_name='sub_geofence')
     location = models.PointField()
     radius = models.FloatField()
     description = models.TextField(blank=True, null=True)
