@@ -1,6 +1,6 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-from .service import check_geofence, nearBy_geofence
+from .service import check_geofence, nearBy_geofence, sub_geofence
 
 class locationConsumer(AsyncWebsocketConsumer):
 
@@ -16,14 +16,26 @@ class locationConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         print(text_data)
         data = json.loads(text_data)
+        # return all Main geofences
         if data.get('type') == 'NearByLocation':
             latitude = data.get('latitude')
             longitude = data.get('longitude')
+            # return nearby Main geofences
             nearby_geofences = await nearBy_geofence(longitude=longitude, latitude=latitude)
             print(nearby_geofences)
             await self.send(json.dumps({
                 'type': 'NearByLocation',
                 'nearby_geofences': nearby_geofences
+            }))
+
+        elif data.get('type') == 'subGeofences':
+            main_geofence = data.get('main_geofence')
+            main_geofence_id = main_geofence.get('id')
+            sub_geofences = await sub_geofence(main_geofence_id)
+            print(sub_geofences)
+            await self.send(json.dumps({
+                'type': 'subGeofences',
+                'sub_geofences': sub_geofences
             }))
             
         elif data.get('type') == 'location':
@@ -36,8 +48,6 @@ class locationConsumer(AsyncWebsocketConsumer):
             print(geofence)
             await self.send(json.dumps({
             'type': 'location',
-            'latitude': latitude,
-            'longitude': longitude,
             'current_geofences' : geofence['current_geofences'],
             'nearby_geofences' : geofence['nearby_geofences']
             }))

@@ -30,6 +30,11 @@ async def check_geofence(longitude, latitude):
 async def nearBy_geofence(longitude, latitude):
     return await database_sync_to_async(sync_nearby_geofence)(longitude, latitude) 
 
+async def sub_geofence(main_geofence_id):
+    return await database_sync_to_async(SubGeofence.objects.filter(main_geofence=main_geofence_id).all())()
+
+async def main_geofence_all():
+    return await database_sync_to_async(MainGeofence.objects.all())()
 
 # Geofence.objects.create(
 #     name="Central Park",
