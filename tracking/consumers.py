@@ -28,6 +28,7 @@ class locationConsumer(AsyncWebsocketConsumer):
                 'nearby_geofences': nearby_geofences
             }))
 
+        # return all sub geofences related to a main geofence
         elif data.get('type') == 'subGeofences':
             main_geofence = data.get('main_geofence')
             main_geofence_id = main_geofence.get('id')

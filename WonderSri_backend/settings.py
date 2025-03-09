@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'channels',
     'corsheaders', # for cross origin requests
     'django.contrib.gis',
+    'rest_framework',
     'tracking',
 ]
 
