@@ -12,22 +12,18 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5!$46%z#h9+ni4c!i77w-x=@5+(q2xhe8cuz_if+r__v0$wa7p'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-5!$46%z#h9+ni4c!i77w-x=@5+(q2xhe8cuz_if+r__v0$wa7p')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 
@@ -38,11 +34,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'WonderSri_backend',
+    
     'rest_framework',
     'fcm_django',
-    # 'locations',
     'channels',
+    
+    'WonderSri_backend',
+    # 'locations',
+    'notifications'
 ]
 
 MIDDLEWARE = [
@@ -131,3 +130,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+FIREBASE_API_KEY = config('FIREBASE_API_KEY')
+FIREBASE_APP_ID=config('FIREBASE_APP_ID')
+FIREBASE_PROJECT_ID=config('FIREBASE_PROJECT_ID')
+FIREBASE_MESSAGING_SENDER_ID = config('FIREBASE_MESSAGING_SENDER_ID')
+# FCM_SERVER_KEY = config('FCM_SERVER_KEY')
+
+# Firebase Cloud Messaging Settings
+FIREBASE_CREDENTIALS_PATH = config('FIREBASE_CREDENTIALS_PATH')
+
+import firebase_admin
+from firebase_admin import credentials
+
+cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+firebase_admin.initialize_app(cred)
