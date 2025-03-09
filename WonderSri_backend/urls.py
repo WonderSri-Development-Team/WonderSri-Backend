@@ -22,5 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # path('api/', include('locations.urls')),
     path('notifications/', include('notifications.urls')),
-    path('send-notification/', SendNotificationView.as_view(), name='sendd_notification'),
+    path('send-notification/', SendNotificationView.as_view(), name='send_notification'),
 ]

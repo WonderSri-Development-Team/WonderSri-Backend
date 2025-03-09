@@ -131,14 +131,14 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Firebase Cloud Messaging Settings
+FIREBASE_CREDENTIALS_PATH = BASE_DIR / config('FIREBASE_CREDENTIALS_PATH')
+
 FIREBASE_API_KEY = config('FIREBASE_API_KEY')
 FIREBASE_APP_ID=config('FIREBASE_APP_ID')
 FIREBASE_PROJECT_ID=config('FIREBASE_PROJECT_ID')
 FIREBASE_MESSAGING_SENDER_ID = config('FIREBASE_MESSAGING_SENDER_ID')
 # FCM_SERVER_KEY = config('FCM_SERVER_KEY')
-
-# Firebase Cloud Messaging Settings
-FIREBASE_CREDENTIALS_PATH = config('FIREBASE_CREDENTIALS_PATH')
 
 import firebase_admin
 from firebase_admin import credentials

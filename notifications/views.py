@@ -16,7 +16,6 @@ class RegisterDeviceView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
 class SendNotificationView(APIView):
     def post(self, request):
         registration_id = request.data.get('registration_id')
