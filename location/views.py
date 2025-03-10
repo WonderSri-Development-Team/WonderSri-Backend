@@ -23,7 +23,7 @@ def list_nearby_events(request):
     """
     user_latitude = request.GET.get('lat')
     user_longitude = request.GET.get('lon')
-    radius = request.GET.get('radius', 10000)  # Optional radius, default 10km
+    radius = request.GET.get('radius', 2000)
 
     try:
         user_latitude = float(user_latitude)
