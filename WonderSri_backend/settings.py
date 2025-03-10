@@ -12,14 +12,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-#import dj_database_url
+import dj_database_url
 
 # Load .env file
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = os.getenv("DEBUG", "False") == "True"
-DATABASE_URL = os.getenv("DATABASE_URL")
 REDIS_URL = os.getenv("REDIS_URL")
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
@@ -33,11 +30,9 @@ GEOS_LIBRARY_PATH = r'C:/OSGeo4W/bin/geos_c.dll'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5!$46%z#h9+ni4c!i77w-x=@5+(q2xhe8cuz_if+r__v0$wa7p'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = []
 
@@ -99,30 +94,12 @@ ASGI_APPLICATION = 'WonderSri_backend.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default="postgres://postgres:password@localhost:5432/databasename",  
-#         engine="django.contrib.gis.db.backends.postgis",
-#     )
-# }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'geofenceDB',
-        'USER': 'postgres',
-        'PASSWORD': 'klnp.2005',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default = os.getenv("DATABASE_URL"),  
+        engine = 'django.contrib.gis.db.backends.postgis',
+    )
 }
-
-
 
 
 # Password validation
