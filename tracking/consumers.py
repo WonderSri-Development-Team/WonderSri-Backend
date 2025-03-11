@@ -1,7 +1,6 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-from .service import check_geofence, nearBy_geofence, sub_geofence
-
+from .service import get_nearby_main_geofences, get_sub_geofences, get_current_main_geofence, get_current_sub_geofence
 class locationConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
@@ -17,14 +16,14 @@ class locationConsumer(AsyncWebsocketConsumer):
         print(text_data)
         data = json.loads(text_data)
         # return all Main geofences
-        if data.get('type') == 'NearByLocation':
+        if data.get('type') == 'nearbygeofences':
             latitude = data.get('latitude')
             longitude = data.get('longitude')
             # return nearby Main geofences
-            nearby_geofences = await nearBy_geofence(longitude=longitude, latitude=latitude)
+            nearby_geofences = await get_nearby_main_geofences(longitude=longitude, latitude=latitude)
             print(nearby_geofences)
             await self.send(json.dumps({
-                'type': 'NearByLocation',
+                'type': 'nearbygeofences',
                 'nearby_geofences': nearby_geofences
             }))
 
@@ -32,7 +31,7 @@ class locationConsumer(AsyncWebsocketConsumer):
         elif data.get('type') == 'subGeofences':
             main_geofence = data.get('main_geofence')
             main_geofence_id = main_geofence.get('id')
-            sub_geofences = await sub_geofence(main_geofence_id)
+            sub_geofences = await get_sub_geofences(main_geofence_id)
             print(sub_geofences)
             await self.send(json.dumps({
                 'type': 'subGeofences',
@@ -44,14 +43,16 @@ class locationConsumer(AsyncWebsocketConsumer):
             longitude = data.get('longitude')
             # latitude = 7.089953576246863
             # longitude = 79.88710594626576
-            #all_geofences = await all_one()
-            geofence = await check_geofence(longitude=longitude, latitude=latitude)
-            print(geofence)
+            main_geofence = await get_current_main_geofence(longitude=longitude, latitude=latitude)
+            print(main_geofence)
+            sub_geofences = await get_current_sub_geofence(longitude=longitude, latitude=latitude)
+            print(sub_geofences)
             await self.send(json.dumps({
-            'type': 'location',
-            'current_geofences' : geofence['current_geofences'],
-            'nearby_geofences' : geofence['nearby_geofences']
+                'type': 'location',
+                'current_geofences' : main_geofence,
+                'nearby_geofences' : sub_geofences
             }))
+            
         elif data.get('type') == 'connection':
             await self.send(json.dumps({
                 'type': data.get('type'),
