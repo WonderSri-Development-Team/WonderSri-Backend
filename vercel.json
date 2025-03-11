@@ -1,0 +1,13 @@
+{
+    "builds": [{
+        "src": "WonderSri_backend/wsgi.py",
+        "use": "@vercel/python",
+        "config": {"maxLambdaSize": "15mb", "runtime": "python3.9"}
+    }],
+    "routes": [
+        {
+            "src": "/(.*)", 
+            "dest": "WonderSri_backend/wsgi.py"
+        }
+    ]
+}
