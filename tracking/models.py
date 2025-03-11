@@ -18,13 +18,11 @@ from django.contrib.gis.db import models
 
 class MainGeofence(models.Model):
     name = models.CharField(max_length=200)
-    location = models.PointField(geography=True, srid=4326) 
-    radius = models.FloatField()    # Radius in meters
+    location = models.PolygonField(geography=True, srid=4326) 
     description = models.TextField(blank=True, null=True)
 
 class SubGeofence(models.Model):
     name = models.CharField(max_length=255)
-    main_geofence = models.ForeignKey(MainGeofence, on_delete=models.CASCADE, related_name='sub_geofence')
-    location = models.PointField(geography=True, srid=4326)
-    radius = models.FloatField()
+    main_geofence = models.ForeignKey(MainGeofence, on_delete=models.CASCADE, related_name='sub_geofences')
+    location = models.PolygonField(geography=True, srid=4326)
     description = models.TextField(blank=True, null=True)
