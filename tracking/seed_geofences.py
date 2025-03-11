@@ -7,10 +7,13 @@ django.setup()
 from tracking.models import MainGeofence, SubGeofence
 from django.contrib.gis.geos import Point
 
+
+
+
 galle_fort, created = MainGeofence.objects.get_or_create(
     name='Galle Fort',
     defaults={
-        'location': Point(80.2170, 6.0267, srid=4326),
+        'location': Point(6.0267, 80.2170, srid=4326),
         'radius': 1000,
         'description': 'A UNESCO World Heritage Site, built by the Portuguese in 1588 and fortified by the Dutch in 1649.'
     }
