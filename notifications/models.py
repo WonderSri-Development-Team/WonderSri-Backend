@@ -10,7 +10,7 @@ User = get_user_model()
 
 class userDevice(models.Model):
     user_id = models.CharField(max_length=100, unique=True)
-    fcm_token = models.TextField()
+    fcm_token = models.CharField(max_length=255, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 def __str__(self):
