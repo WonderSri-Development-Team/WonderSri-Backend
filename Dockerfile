@@ -2,8 +2,8 @@
 FROM python:3.12.6-slim
 
 # Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Install GDAL, GEOS, and required dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -29,8 +29,8 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . /app/
 
-# Expose port 8000
-EXPOSE 8000
+# Expose port 10000 (required by Render)
+EXPOSE 10000
 
-# Run migrations and start Django using `manage.py runserver`
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Run migrations and start Django using `gunicorn`
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "WonderSri_backend.wsgi:application"]
