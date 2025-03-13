@@ -2,8 +2,6 @@ from django.contrib.gis.geos import Point
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.core.validators import MinValueValidator
-from pycparser.ply.yacc import default_lr
-
 
 class Location(models.Model):
     """Represents a geographic location, including attractions, restaurants, shops, etc."""
@@ -61,7 +59,7 @@ class Event(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True,
         validators=[MinValueValidator(0)]
     )
-    image = models.ImageField(upload_to='event_images/', null=True, blank=True)
+    image_url = models.URLField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -75,6 +73,7 @@ class Activity(models.Model):
     description = models.TextField()
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='activities')
     operating_hours = models.JSONField(null=True, blank=True)
+    image_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.title} at {self.location.name}"
@@ -85,7 +84,7 @@ class Food(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField()
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='food_items', null=True, blank=True)
+    image_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.title} ({self.location.name if self.location else 'General'})"
+        return f"{self.title} ({self.description})"

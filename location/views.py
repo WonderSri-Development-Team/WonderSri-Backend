@@ -226,7 +226,6 @@ def list_food(request):
     serializer = FoodSerializer(food_items, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 @swagger_auto_schema(
     method='put',
     operation_description="Update a food item",

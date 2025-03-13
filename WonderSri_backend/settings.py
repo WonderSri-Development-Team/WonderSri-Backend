@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'dj_rest_auth',
     'social_django',
-    'location'
+    'location',
+    'storages'
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -173,3 +174,16 @@ SOCIALACCOUNT_SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "http://127.0.0.1:8000/auth/google/callback/"
+
+#AWS S3
+
+# AWS S3 Credentials
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'wondersri-media'
+AWS_S3_REGION_NAME = 'eu-north-1'
+
+# Use S3 for Media Storage
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+MEDIA_URL = 'https://wondersri-media.s3.eu-north-1.amazonaws.com/'

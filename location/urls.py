@@ -6,6 +6,8 @@ urlpatterns = [
     path('nearby-events', views.list_nearby_events),
     path('nearby-activites', views.list_nearby_activities),
     path('create-activities', views.create_activity),
+    path('create-food', views.create_food),
+    path('foods', views.list_food),
 
 ]
 
