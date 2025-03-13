@@ -33,4 +33,4 @@ COPY . /app/
 EXPOSE 10000
 
 # Run migrations and start Django using `gunicorn`
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "WonderSri_backend.wsgi:application"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT"]
