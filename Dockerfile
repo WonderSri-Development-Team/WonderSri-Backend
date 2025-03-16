@@ -12,10 +12,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgdal-dev \
     libgeos-dev \
     python3-gdal \
+    postgresql-client \    
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Verify GDAL installation
 RUN gdalinfo --version
+
+# Set GDAL environment variables
+ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
+# ENV GEOS_LIBRARY_PATH=/usr/lib/libgeos_c.so
 
 # Set the working directory
 WORKDIR /app

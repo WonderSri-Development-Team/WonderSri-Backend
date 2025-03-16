@@ -42,21 +42,25 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
+    'django.contrib.gis', # not needed for user management
+
+    # third party apps
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
-    'users',
     'drf_yasg', #Swagger
     'rest_framework_simplejwt.token_blacklist',
+    'dj_rest_auth',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'dj_rest_auth',
     'social_django',
+    'storages',
+
+    # My apps
+    'users',
     'location',
-    'storages'
 ]
 
 AUTHENTICATION_BACKENDS = (

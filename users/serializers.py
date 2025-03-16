@@ -48,3 +48,23 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']  # Automatically hashes the password
         )
         return user
+
+from .models import UserProfile, UserVisit, SavedItem
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = UserProfile
+        fields = ['user', 'preferred_language', 'notification_radius', 'interests', 'email_verified', 'profile_picture']
+        
+class UserVisitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserVisit
+        fields = ['id', 'location', 'visited_at', 'rating', 'comment']
+        
+class SavedItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedItem
+        fields = ['id', 'item_type', 'item_id', 'saved_at', 'notes']
+    
