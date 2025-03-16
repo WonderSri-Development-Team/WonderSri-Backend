@@ -455,3 +455,16 @@ def get_account(request):
     return Response({'username': user.username, 'email': user.email}, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    operation_description="Retrieve user profile",
+    responses={200: UserProfileSerializer()},
+)
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+    """Retrieve logged-in user's profile details"""
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    serializer = UserProfileSerializer(user_profile)
+    return Response(serializer.data, status=status.HTTP_200_OK)
