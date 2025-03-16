@@ -41,5 +41,8 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='swagger-schema'),
 
     path('verify-email/<str:uidb64>/<str:token>/', views.verify_email, name='verify_email'),
+    
+    path('profile/', get_profile, name='get profile'),
+    path('profile/update/', update_profile, name='update profile'),
 
 ]

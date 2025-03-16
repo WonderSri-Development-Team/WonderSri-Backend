@@ -468,3 +468,23 @@ def get_profile(request):
     user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
     serializer = UserProfileSerializer(user_profile)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method='put',
+    operation_description="Update user profile",
+    request_body=UserProfileSerializer,
+    responses={200: UserProfileSerializer()},
+)
+@api_view(['PUT', 'PATCH'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+    
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
