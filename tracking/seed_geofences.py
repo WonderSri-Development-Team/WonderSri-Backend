@@ -1,11 +1,14 @@
 import os
 import django
+import sys
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'WonderSri_backend.settings')
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+
 django.setup()
 
 from tracking.models import MainGeofence, SubGeofence
-from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon
 
 main_latlngs = [
@@ -440,5 +443,9 @@ for name, polygon, description in sub_geofences_data:
             'description': description
         }
     )
+    if created:
+        print("New SubGeofence created:", sub_geofences)
+    else:
+        print("SubGeofence already exists:", sub_geofences)
 
 print("Galle Fort and its SubGeofences have been saved successfully!")
