@@ -39,7 +39,7 @@
         let socket;
 
         function connectWebSocket() {
-            socket = new WebSocket('ws://' + window.location.host + '/ws/location/');
+            socket = new WebSocket('wss://' + window.location.host + '/ws/location/');
 
             socket.onopen = function(e) {
                 socket.send(JSON.stringify({
