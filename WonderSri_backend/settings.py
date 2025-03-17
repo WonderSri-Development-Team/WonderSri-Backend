@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'channels',
-    'corsheaders', # for cross origin requests
+    # 'corsheaders', for cross origin requests
     'django.contrib.gis',
     'rest_framework',
     'tracking',
@@ -63,9 +63,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000", # for local host flutter frontend
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000", # for local host flutter frontend
+# ]
 
 ROOT_URLCONF = 'WonderSri_backend.urls'
 
