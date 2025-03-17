@@ -17,14 +17,10 @@ import dj_database_url
 # Load .env file
 load_dotenv()
 
-REDIS_URL = os.getenv("REDIS_URL")
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
-
+GDAL_LIBRARY_PATH = r"D:/Program Files/OSGeo4W/bin/gdal310.dll"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -141,3 +137,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.environ.get("REDIS_URL")],
+        },
+    },
+}
