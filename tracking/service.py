@@ -44,15 +44,16 @@ async def get_nearby_main_geofences(longitude, latitude):
     """
     returns only nearby main geofences
     .aprefetch_related('sub_geofence') - to get related sub geofences - use with AllGeofenceSerializer
+    MainGeofence - to get only main geofences
     """
     user_point = Point(longitude, latitude, srid=4326)
     async with transaction.atomic():
         nearby_main_geofences = await MainGeofence.objects.filter(
-            location__dwithin = (user_point, 100)
+            location__dwithin = (user_point, 1000 )
         ).exclude(
             location__contains = user_point  # exclude user's current geofence
-        )
-    serialized_nearby_main_geofences = GeofenceSerializer(nearby_main_geofences, many=True)
+        ).aprefetch_related('sub_geofence')
+    serialized_nearby_main_geofences = AllGeofenceSerializer(nearby_main_geofences, many=True)
     return serialized_nearby_main_geofences.data
 
 async def get_sub_geofences(main_geofence_id):

@@ -19,12 +19,12 @@ class locationConsumer(AsyncWebsocketConsumer):
         if data.get('type') == 'nearbygeofences':
             latitude = data.get('latitude')
             longitude = data.get('longitude')
-            # return nearby Main geofences
+            # return nearby Main geofences with sub geofences
             nearby_geofences = await get_nearby_main_geofences(longitude=longitude, latitude=latitude)
             print(nearby_geofences)
             await self.send(json.dumps({
                 'type': 'nearbygeofences',
-                'nearby_geofences': nearby_geofences
+                'nearby_geofences': [nearby_geofences]
             }))
 
         # return all sub geofences related to a main geofence
