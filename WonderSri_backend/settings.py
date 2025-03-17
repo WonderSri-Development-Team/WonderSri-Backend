@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ['.vercel.app','wondersri-backend-tracking.onrender.com']
+ALLOWED_HOSTS = ['wondersri-backend-6475.onrender.com']
 
 # Application definition
 
