@@ -20,6 +20,7 @@ class locationConsumer(AsyncWebsocketConsumer):
             latitude = data.get('latitude')
             longitude = data.get('longitude')
             # return nearby Main geofences with sub geofences
+            print(latitude, longitude)
             nearby_geofences = await get_nearby_main_geofences(longitude=longitude, latitude=latitude)
             print(nearby_geofences)
             await self.send(json.dumps({
@@ -31,6 +32,7 @@ class locationConsumer(AsyncWebsocketConsumer):
         elif data.get('type') == 'subGeofences':
             main_geofence = data.get('main_geofence')
             main_geofence_id = main_geofence.get('id')
+            print(main_geofence_id)
             sub_geofences = await get_sub_geofences(main_geofence_id)
             print(sub_geofences)
             await self.send(json.dumps({
@@ -43,6 +45,7 @@ class locationConsumer(AsyncWebsocketConsumer):
             longitude = data.get('longitude')
             # latitude = 7.089953576246863
             # longitude = 79.88710594626576
+            print(latitude, longitude)
             main_geofence = await get_current_main_geofence(longitude=longitude, latitude=latitude)
             print(main_geofence)
             sub_geofences = await get_current_sub_geofence(longitude=longitude, latitude=latitude)
