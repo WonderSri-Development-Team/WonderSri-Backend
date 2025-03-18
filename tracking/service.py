@@ -52,6 +52,8 @@ def get_nearby_main_geofences_sync(latitude, longitude):
     # .exclude(
     #     location__contains = user_point  # exclude user's current geofence
     # )
+    if not nearby_main_geofences.exists():
+        return {"message": "No nearby geofences found."}
     serialized_nearby_main_geofences = AllGeofenceSerializer(nearby_main_geofences, many=True)
     return serialized_nearby_main_geofences.data
 
