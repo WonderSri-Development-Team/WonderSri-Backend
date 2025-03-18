@@ -10,7 +10,7 @@ class AllGeofenceSerializer(serializers.ModelSerializer):
     sub_geofence = SubGeofenceSerializer(many=True, read_only=True)
     class Meta:
         model = MainGeofence
-        fields = ['id', 'name', 'location', 'radius', 'description', 'sub_geofence']
+        fields = ['id', 'name', 'location', 'radius', 'description', 'sub_geofences']
 
 class GeofenceSerializer(serializers.ModelSerializer):
     class Meta:

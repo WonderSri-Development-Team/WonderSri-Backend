@@ -47,8 +47,8 @@ def get_nearby_main_geofences_sync(latitude, longitude):
     """
     user_point = Point(longitude, latitude, srid=4326)
     nearby_main_geofences = MainGeofence.objects.filter(
-        location__dwithin = (user_point, 1000 )
-    ).prefetch_related('sub_geofence')
+        location__dwithin = (user_point, 10000 )
+    ).prefetch_related('sub_geofences')
     # .exclude(
     #     location__contains = user_point  # exclude user's current geofence
     # )
