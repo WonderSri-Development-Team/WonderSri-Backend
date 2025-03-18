@@ -20,7 +20,7 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-#GDAL_LIBRARY_PATH = r"D:/Program Files/OSGeo4W/bin/gdal310.dll"
+GDAL_LIBRARY_PATH = r"D:/Program Files/OSGeo4W/bin/gdal310.dll"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ['wondersri-backend-6475.onrender.com']
+ALLOWED_HOSTS = ['wondersri-backend-6475.onrender.com', "localhost"]
 
 # Application definition
 

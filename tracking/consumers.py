@@ -60,7 +60,7 @@ class locationConsumer(AsyncWebsocketConsumer):
             all_geofences = await get_all_geofences()
             await self.send(json.dumps({
                 'type': data.get('type'),
-                'status': all_geofences
+                data.get('type'): all_geofences
             }))
     
         elif data.get('type') == 'connection':
