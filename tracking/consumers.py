@@ -1,6 +1,6 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-from .service import get_nearby_main_geofences, get_sub_geofences, get_current_main_geofence, get_current_sub_geofence
+from .service import get_nearby_main_geofences, get_sub_geofences, get_current_main_geofence, get_current_sub_geofence, get_all_geofences
 class locationConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
@@ -56,6 +56,13 @@ class locationConsumer(AsyncWebsocketConsumer):
                 'nearby_geofences' : sub_geofences
             }))
             
+        elif data.get('type') == 'allGeofences':
+            all_geofences = await get_all_geofences()
+            await self.send(json.dumps({
+                'type': data.get('type'),
+                'status': all_geofences
+            }))
+    
         elif data.get('type') == 'connection':
             await self.send(json.dumps({
                 'type': data.get('type'),
