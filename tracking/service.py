@@ -42,7 +42,7 @@ def get_current_sub_geofence_sync(longitude, latitude):
 def get_nearby_main_geofences_sync(longitude, latitude):
     """
     returns only nearby main geofences
-    .aprefetch_related('sub_geofence') - to get related sub geofences - use with AllGeofenceSerializer
+    .prefetch_related('sub_geofence') - to get related sub geofences - use with AllGeofenceSerializer
     MainGeofence - to get only main geofences
     """
     user_point = Point(longitude, latitude, srid=4326)
@@ -50,7 +50,7 @@ def get_nearby_main_geofences_sync(longitude, latitude):
         location__dwithin = (user_point, 1000 )
     ).exclude(
         location__contains = user_point  # exclude user's current geofence
-    ).aprefetch_related('sub_geofence')
+    ).prefetch_related('sub_geofence')
     serialized_nearby_main_geofences = AllGeofenceSerializer(nearby_main_geofences, many=True)
     return serialized_nearby_main_geofences.data
 
