@@ -15,38 +15,38 @@ def get_all_geofences_sync():
     return serialized_all_geofences.data
 
 @database_sync_to_async
-async def get_current_main_geofence_sync(longitude, latitude):
+def get_current_main_geofence_sync(longitude, latitude):
     """
     returns current main geofence
     """
     user_point = Point(longitude, latitude, srid=4326)
-    current_geofence = await MainGeofence.objects.filter(
+    current_geofence = MainGeofence.objects.filter(
         location__contains = user_point
     ).first()
     serialized_current_main_geofence = GeofenceSerializer(current_geofence, many=False)
     return serialized_current_main_geofence.data
 
 @database_sync_to_async
-async def get_current_sub_geofence_sync(longitude, latitude):
+def get_current_sub_geofence_sync(longitude, latitude):
     """
     returns current sub geofence
     """
     user_point = Point(longitude, latitude, srid=4326)
-    current_sub_geofence = await SubGeofence.objects.filter(
+    current_sub_geofence = SubGeofence.objects.filter(
         location__contains = user_point
     ).first()
     serialized_current_sub_geofences = SubGeofenceSerializer(current_sub_geofence, many=False)
     return serialized_current_sub_geofences.data
 
 @database_sync_to_async
-async def get_nearby_main_geofences_sync(longitude, latitude):
+def get_nearby_main_geofences_sync(longitude, latitude):
     """
     returns only nearby main geofences
     .aprefetch_related('sub_geofence') - to get related sub geofences - use with AllGeofenceSerializer
     MainGeofence - to get only main geofences
     """
     user_point = Point(longitude, latitude, srid=4326)
-    nearby_main_geofences = await MainGeofence.objects.filter(
+    nearby_main_geofences = MainGeofence.objects.filter(
         location__dwithin = (user_point, 1000 )
     ).exclude(
         location__contains = user_point  # exclude user's current geofence
@@ -55,11 +55,11 @@ async def get_nearby_main_geofences_sync(longitude, latitude):
     return serialized_nearby_main_geofences.data
 
 @database_sync_to_async
-async def get_sub_geofences_sync(main_geofence_id):
+def get_sub_geofences_sync(main_geofence_id):
     """
     returns all sub geofences related to a main geofence
     """
-    sub_geofences = await SubGeofence.objects.filter(main_geofence = main_geofence_id).all()
+    sub_geofences = SubGeofence.objects.filter(main_geofence = main_geofence_id).all()
     serialized_sub_geofences = SubGeofenceSerializer(sub_geofences, many=True)
     return serialized_sub_geofences.data
 
