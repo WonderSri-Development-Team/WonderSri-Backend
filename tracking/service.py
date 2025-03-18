@@ -15,7 +15,7 @@ def get_all_geofences_sync():
     return serialized_all_geofences.data
 
 @database_sync_to_async
-def get_current_main_geofence_sync(longitude, latitude):
+def get_current_main_geofence_sync(latitude, longitude):
     """
     returns current main geofence
     """
@@ -27,7 +27,7 @@ def get_current_main_geofence_sync(longitude, latitude):
     return serialized_current_main_geofence.data
 
 @database_sync_to_async
-def get_current_sub_geofence_sync(longitude, latitude):
+def get_current_sub_geofence_sync(latitude, longitude):
     """
     returns current sub geofence
     """
@@ -39,18 +39,19 @@ def get_current_sub_geofence_sync(longitude, latitude):
     return serialized_current_sub_geofences.data
 
 @database_sync_to_async
-def get_nearby_main_geofences_sync(longitude, latitude):
+def get_nearby_main_geofences_sync(latitude, longitude):
     """
     returns only nearby main geofences
     .prefetch_related('sub_geofence') - to get related sub geofences - use with AllGeofenceSerializer
-    MainGeofence - to get only main geofences
+    GeofenceSerializer - to get only main geofences
     """
     user_point = Point(longitude, latitude, srid=4326)
     nearby_main_geofences = MainGeofence.objects.filter(
         location__dwithin = (user_point, 1000 )
-    ).exclude(
-        location__contains = user_point  # exclude user's current geofence
     ).prefetch_related('sub_geofence')
+    # .exclude(
+    #     location__contains = user_point  # exclude user's current geofence
+    # )
     serialized_nearby_main_geofences = AllGeofenceSerializer(nearby_main_geofences, many=True)
     return serialized_nearby_main_geofences.data
 
@@ -67,14 +68,14 @@ def get_sub_geofences_sync(main_geofence_id):
 async def get_all_geofences():
     return await get_all_geofences_sync()
 
-async def get_current_main_geofence(longitude, latitude):
-    return await get_current_main_geofence_sync(longitude, latitude)
+async def get_current_main_geofence(latitude, longitude):
+    return await get_current_main_geofence_sync(latitude, longitude)
 
-async def get_current_sub_geofence(longitude, latitude):
-    return await get_current_sub_geofence_sync(longitude, latitude)
+async def get_current_sub_geofence(latitude, longitude):
+    return await get_current_sub_geofence_sync(latitude, longitude)
 
-async def get_nearby_main_geofences(longitude, latitude):
-    return await get_nearby_main_geofences_sync(longitude, latitude)
+async def get_nearby_main_geofences(latitude, longitude):
+    return await get_nearby_main_geofences_sync(latitude, longitude)
 
 async def get_sub_geofences(main_geofence_id):
     return await get_sub_geofences_sync(main_geofence_id)

@@ -21,11 +21,11 @@ class locationConsumer(AsyncWebsocketConsumer):
             longitude = data.get('longitude')
             # return nearby Main geofences with sub geofences
             print(latitude, longitude)
-            nearby_geofences = await get_nearby_main_geofences(longitude=longitude, latitude=latitude)
+            nearby_geofences = await get_nearby_main_geofences(latitude=latitude, longitude=longitude)
             print(nearby_geofences)
             await self.send(json.dumps({
                 'type': 'nearbygeofences',
-                'nearby_geofences': [nearby_geofences]
+                'nearby_geofences': nearby_geofences
             }))
 
         # return all sub geofences related to a main geofence
@@ -46,9 +46,9 @@ class locationConsumer(AsyncWebsocketConsumer):
             # latitude = 7.089953576246863
             # longitude = 79.88710594626576
             print(latitude, longitude)
-            main_geofence = await get_current_main_geofence(longitude=longitude, latitude=latitude)
+            main_geofence = await get_current_main_geofence(latitude=latitude, longitude=longitude)
             print(main_geofence)
-            sub_geofences = await get_current_sub_geofence(longitude=longitude, latitude=latitude)
+            sub_geofences = await get_current_sub_geofence(latitude=latitude, longitude=longitude)
             print(sub_geofences)
             await self.send(json.dumps({
                 'type': 'location',
@@ -62,10 +62,10 @@ class locationConsumer(AsyncWebsocketConsumer):
                 'status': data.get('status')
             }))
     
-    async def disconnect(self):
+    async def disconnect(self, close_code):
         await self.send(json.dumps(
             {
                 'type' : 'connection',
-                'status' : "connection closed"
+                'status' : close_code
             }
         ))
