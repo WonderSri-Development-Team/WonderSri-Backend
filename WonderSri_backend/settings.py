@@ -35,27 +35,26 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    'rest_framework',
-    'fcm_django',
-    'channels',
-    
-    'WonderSri_backend',
-    # 'locations',
-    'notifications'
+    'django.contrib.gis',
+
+    # third party apps
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
-    'users',
     'drf_yasg', #Swagger
     'rest_framework_simplejwt.token_blacklist',
+    'dj_rest_auth',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'dj_rest_auth',
     'social_django',
-    'location'
+    'storages',
+
+    # My apps
+    'users',
+    'location',
+    'events',
 ]
 
 AUTHENTICATION_BACKENDS = (
