@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","w
 
 
 # Ensure GDAL paths are set correctly
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
+# GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
 
 # Application definition
 INSTALLED_APPS = [
