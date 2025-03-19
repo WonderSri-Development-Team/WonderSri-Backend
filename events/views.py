@@ -1,8 +1,15 @@
+from django.utils.timezone import now
 from django.shortcuts import render
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from geopy.distance import geodesic
+from notifications.models import userDevice
+from notifications.notifications import send_push_notifications
+from .supabase import fetch_events
 
 # Create your views here.
 
-@api_view
+@api_view(['POST'])
 def check_nearby_events(request):
     """
     Check if the user has entered an event geofence.
