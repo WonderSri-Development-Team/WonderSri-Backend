@@ -4,7 +4,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from users.models import UserProfile
+from users.serializers import UserSerializer, ProfileSerializer
 from .models import Event, Activity, Food
 from .serializers import EventSerializer, FoodSerializer, ActivitiesSerializer
 
@@ -127,7 +130,6 @@ def list_nearby_activities(request):
 
     user_location = Point(user_longitude, user_latitude, srid=4326)
 
-    # Query: Filter activities within the radius & sort by distance
     nearby_activities = Activity.objects.annotate(
         distance=Distance('location__coordinates', user_location)
     ).filter(distance__lte=radius).order_by('distance')
@@ -260,3 +262,44 @@ def delete_food(request, pk):
     food_item = get_object_or_404(Food, pk=pk)
     food_item.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+@swagger_auto_schema(
+    method='PUT',
+    operation_description="Allows users to upload or update their profile picture.",
+    request_body=ProfileSerializer,
+    responses={
+        200: ProfileSerializer,
+        400: "Bad Request"
+    }
+)
+@api_view(['PUT'])
+def update_profile(request):
+    """Allows users to update their profile attributes including profile picture, phone number, and date of birth."""
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    serializer = ProfileSerializer(user_profile, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            "message": "Profile updated successfully!",
+            "profile": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    method='GET',
+    operation_description="Retrieve the user's profile data.",
+    responses={
+        200: ProfileSerializer,
+        401: "Unauthorized"
+    }
+)
+@api_view(['GET'])
+def get_profile(request):
+    """Retrieve the user's profile data."""
+    user_profile = UserProfile.objects.get(user=request.user)
+    serializer = ProfileSerializer(user_profile)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+

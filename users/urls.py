@@ -42,4 +42,7 @@ urlpatterns = [
 
     path('verify-email/<str:uidb64>/<str:token>/', views.verify_email, name='verify_email'),
 
+    ## PROFILE
+    path('users/update-profile', views.update_profile, name='update_profile'),
+
 ]

@@ -2,6 +2,9 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 
+from users.models import UserProfile
+
+
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
 
@@ -48,3 +51,8 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password']  # Automatically hashes the password
         )
         return user
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__'

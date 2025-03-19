@@ -1,6 +1,10 @@
+from cProfile import Profile
+
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
+from users.models import UserProfile
 from .models import Event, Food, Location, Activity  # Adjusted imports
 
 
@@ -79,4 +83,6 @@ class FoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = Food
         fields = '__all__'
+
+
 

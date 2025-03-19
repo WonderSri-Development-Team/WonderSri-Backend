@@ -52,7 +52,7 @@ class Event(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField()
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='events', default = 2)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='events')
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     price = models.DecimalField(

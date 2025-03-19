@@ -23,16 +23,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-
+#JWT generation
 SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","wondersri-backend-test.onrender.com"]
 
 
 # Ensure GDAL paths are set correctly
-# GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
+GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
 
 # Application definition
 INSTALLED_APPS = [
