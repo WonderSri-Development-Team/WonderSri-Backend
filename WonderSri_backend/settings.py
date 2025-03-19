@@ -19,7 +19,7 @@ from drf_yasg import middleware
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+#JWT GENERATION
 SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = True
@@ -102,11 +102,11 @@ WSGI_APPLICATION = 'WonderSri_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'locations_db',
-        'USER': 'testuser',
-        'PASSWORD': 'abc123',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': config("DB_NAME"),
+        'USER': config("SUPABASE_USER"),
+        'PASSWORD': config("SUPABASE_DB_PASSWORD"),
+        'HOST': config("SUPABASE_HOST"),
+        'PORT': config("PORT", cast=int), #change default port?
     }
 }
 
@@ -174,6 +174,7 @@ SOCIALACCOUNT_SCOPES = [
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "http://127.0.0.1:8000/auth/google/callback/"
 
 # Firebase Cloud Messaging Settings
+
 FIREBASE_CREDENTIALS_PATH = BASE_DIR / config('FIREBASE_CREDENTIALS_PATH')
 
 FIREBASE_API_KEY = config('FIREBASE_API_KEY')
@@ -182,8 +183,6 @@ FIREBASE_PROJECT_ID=config('FIREBASE_PROJECT_ID')
 FIREBASE_MESSAGING_SENDER_ID = config('FIREBASE_MESSAGING_SENDER_ID')
 # FCM_SERVER_KEY = config('FCM_SERVER_KEY')
 
-import firebase_admin
-from firebase_admin import credentials
-
-cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
-firebase_admin.initialize_app(cred)
+# Read supabase variables from .env
+SUPABASE_URL = config("SUPABASE_HOST")
+SUPABASE_KEY = config("SUPABASE_KEY")

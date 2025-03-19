@@ -1,5 +1,13 @@
 import firebase_admin
-from firebase_admin import messaging
+from firebase_admin import messaging, credentials
+from django.admin import settings
+
+def initialize_firebase():
+    if not firebase_admin._apps: # Avoid re-initialization
+        cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+        firebase_admin.initialize_app(cred)
+        
+initialize_firebase()
 
 def send_push_notifications(registration_token, title, body):
     message = messaging.Message(
