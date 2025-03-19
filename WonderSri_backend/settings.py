@@ -28,7 +28,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","wondersri-backend-test.onrender.com"]
+ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","wondersri-backend-test.onrender.com","wondersri-backend.onrender.com"]
 
 
 # Ensure GDAL paths are set correctly
