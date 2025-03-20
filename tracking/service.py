@@ -69,6 +69,8 @@ def get_sub_geofences_sync(main_geofence_id):
     returns all sub geofences related to a main geofence
     """
     sub_geofences = SubGeofence.objects.filter(main_geofence = main_geofence_id).all()
+    if not sub_geofences.exists():
+        return {"message": "No sub geofences found."}
     serialized_sub_geofences = SubGeofenceSerializer(sub_geofences, many=True)
     return serialized_sub_geofences.data
 

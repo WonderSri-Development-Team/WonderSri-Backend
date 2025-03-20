@@ -30,8 +30,7 @@ class locationConsumer(AsyncWebsocketConsumer):
 
         # return all sub geofences related to a main geofence
         elif data.get('type') == 'subGeofences':
-            main_geofence = data.get('main_geofence')
-            main_geofence_id = main_geofence.get('id')
+            main_geofence_id = data.get('main_geofence_id')
             print(main_geofence_id)
             sub_geofences = await get_sub_geofences(main_geofence_id)
             print(sub_geofences)
