@@ -11,6 +11,8 @@ def get_all_geofences_sync():
     returns all main geofences with sub geofences
     """
     all_geofences = MainGeofence.objects.all()
+    if not all_geofences.exists():
+        return {"message": "No geofences found."}
     serialized_all_geofences = AllGeofenceSerializer(all_geofences, many=True)
     return serialized_all_geofences.data
 

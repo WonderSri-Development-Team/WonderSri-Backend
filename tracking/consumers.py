@@ -52,8 +52,8 @@ class locationConsumer(AsyncWebsocketConsumer):
             print(sub_geofences)
             await self.send(json.dumps({
                 'type': 'location',
-                'current_geofences' : main_geofence,
-                'nearby_geofences' : sub_geofences
+                'current_main_geofences' : main_geofence,
+                'current_sub_geofences' : sub_geofences
             }))
             
         elif data.get('type') == 'allGeofences':
