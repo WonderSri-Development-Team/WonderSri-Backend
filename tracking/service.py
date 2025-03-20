@@ -24,8 +24,10 @@ def get_current_main_geofence_sync(latitude, longitude):
     user_point = Point(longitude, latitude, srid=4326)
     current_geofence = MainGeofence.objects.filter(
         location__contains = user_point
-    ).first()
-    serialized_current_main_geofence = GeofenceSerializer(current_geofence, many=False)
+    )
+    if not current_geofence.exists():
+        return {"message": "No current main geofence found."}
+    serialized_current_main_geofence = GeofenceSerializer(current_geofence, many=True)
     return serialized_current_main_geofence.data
 
 @database_sync_to_async
@@ -36,8 +38,10 @@ def get_current_sub_geofence_sync(latitude, longitude):
     user_point = Point(longitude, latitude, srid=4326)
     current_sub_geofence = SubGeofence.objects.filter(
         location__contains = user_point
-    ).first()
-    serialized_current_sub_geofences = SubGeofenceSerializer(current_sub_geofence, many=False)
+    )
+    if not current_sub_geofence.exists():
+        return {"message": "No current sub geofence found."}
+    serialized_current_sub_geofences = SubGeofenceSerializer(current_sub_geofence, many=True)
     return serialized_current_sub_geofences.data
 
 @database_sync_to_async
