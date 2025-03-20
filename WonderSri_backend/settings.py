@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from decouple import config
 import os
-
+import storages
 from drf_yasg import middleware
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","w
 
 
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
+# GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
 
 # Application definition
 INSTALLED_APPS = [
@@ -180,8 +180,14 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "http://127.0.0.1:8000/auth/google/call
 # AWS S3 Credentials
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = 'wondersri-media'
-AWS_S3_REGION_NAME = 'eu-north-1'
+AWS_STORAGE_BUCKET_NAME = "wondersri-media"
+AWS_REGION = "eu-north-1"
+
+# Additional S3 settings
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = 'public-read'  # or 'private' if you need restricted access
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_ADDRESSING_STYLE = 'virtual'
 
 # Use S3 for Media Storage
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

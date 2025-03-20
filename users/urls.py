@@ -18,6 +18,8 @@ from django.urls import path, re_path
 from users.swagger import schema_view
 from users import views
 
+app_name = 'users'
+
 urlpatterns = [
     path('login',views.login),
 
@@ -44,5 +46,13 @@ urlpatterns = [
 
     ## PROFILE
     path('users/update-profile', views.update_profile, name='update_profile'),
+
+    path('change-email', views.change_email, name='change_email'),
+
+    path('change-username', views.change_username, name='change_username'),
+
+    path('delete-account', views.delete_account, name='delete_account'),
+
+    path('upload-profile-picture/', views.upload_profile_picture, name='upload_profile_picture'),
 
 ]

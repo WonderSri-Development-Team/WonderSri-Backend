@@ -52,7 +52,7 @@ class Event(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField()
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='events')
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='events', default=3)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     price = models.DecimalField(
@@ -88,3 +88,4 @@ class Food(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.description})"
+

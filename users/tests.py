@@ -2,7 +2,9 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
 
 
 class UserViewTest(APITestCase):
@@ -26,7 +28,7 @@ class UserViewTest(APITestCase):
 
     def test_signup(self):
         """Test user signup."""
-        url = reverse('signup')
+        url = '/auth/signup'  # Direct URL instead of reverse
         data = {
             'username': 'newuser',
             'email': 'newuser@example.com',
@@ -45,7 +47,7 @@ class UserViewTest(APITestCase):
 
     def test_signup_existing_username(self):
         """Test signup with an existing username."""
-        url = reverse('signup')
+        url = '/auth/signup'
         data = {
             'username': 'testuser',  # Already exists
             'email': 'newuser@example.com',
@@ -57,7 +59,7 @@ class UserViewTest(APITestCase):
 
     def test_signup_existing_email(self):
         """Test signup with an existing email."""
-        url = reverse('signup')
+        url = '/auth/signup'
         data = {
             'username': 'newuser',
             'email': 'testuser@example.com',  # Already exists
@@ -69,7 +71,7 @@ class UserViewTest(APITestCase):
 
     def test_login_success(self):
         """Test successful user login."""
-        url = reverse('login')
+        url = '/auth/login'
         data = {
             'email': 'testuser@example.com',
             'password': 'testpassword'
@@ -82,7 +84,7 @@ class UserViewTest(APITestCase):
 
     def test_login_invalid_credentials(self):
         """Test login with invalid credentials."""
-        url = reverse('login')
+        url = '/auth/login'
         data = {
             'email': 'testuser@example.com',
             'password': 'wrongpassword'
@@ -93,7 +95,7 @@ class UserViewTest(APITestCase):
 
     def test_login_missing_credentials(self):
         """Test login with missing credentials."""
-        url = reverse('login')
+        url = '/auth/login'
         data = {'email': 'testuser@example.com'}  # Missing password
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -106,7 +108,7 @@ class UserViewTest(APITestCase):
 
     def test_test_auth_authenticated(self):
         """Test the test_auth endpoint with a logged-in user."""
-        url = reverse('test-auth')
+        url = '/auth/test-auth'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], f'Authenticated as {self.test_user.username}')
@@ -114,7 +116,7 @@ class UserViewTest(APITestCase):
     def test_logout(self):
         """Test user logout."""
         refresh = RefreshToken.for_user(self.test_user)
-        url = reverse('logout')
+        url = '/auth/logout'
         data = {'refresh_token': str(refresh)}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -122,7 +124,7 @@ class UserViewTest(APITestCase):
 
     def test_change_username(self):
         """Test changing the username of a logged-in user."""
-        url = reverse('change-username')
+        url = '/auth/change-username'
         data = {'username': 'updatedusername'}
         response = self.client.post(url, data, format='json')
 
@@ -135,7 +137,7 @@ class UserViewTest(APITestCase):
 
     def test_request_password_reset(self):
         """Test requesting a password reset."""
-        url = reverse('request-password-reset')
+        url = '/auth/request-password-reset'
         data = {'email': 'testuser@example.com'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -143,13 +145,12 @@ class UserViewTest(APITestCase):
 
     def test_reset_password(self):
         """Test resetting the password using a valid token."""
-
         # Generate a password reset token for the test user
         token = default_token_generator.make_token(self.test_user)
         uidb64 = urlsafe_base64_encode(force_bytes(self.test_user.pk))
 
-        # Construct the password reset URL
-        url = reverse('reset-password', kwargs={'uidb64': uidb64, 'token': token})
+        # Construct the password reset URL directly
+        url = f'/auth/reset-password/{uidb64}/{token}/'
 
         data = {'password': 'newpassword'}
         response = self.client.post(url, data, format='json')
@@ -163,9 +164,10 @@ class UserViewTest(APITestCase):
 
     def test_change_password(self):
         """Test changing the password of a logged-in user."""
-        url = reverse('change-password')
+        url = '/auth/change-password'
         data = {
             'old_password': 'testpassword',
+            'confirm_password': 'newpassword123',
             'new_password': 'newpassword123'
         }
         response = self.client.post(url, data, format='json')
@@ -179,7 +181,7 @@ class UserViewTest(APITestCase):
 
     def test_change_email(self):
         """Test changing the email of a logged-in user."""
-        url = reverse('change-email')
+        url = '/auth/change-email'
         new_email = 'newemail@example.com'
         data = {'email': new_email}
         response = self.client.post(url, data, format='json')
@@ -193,7 +195,7 @@ class UserViewTest(APITestCase):
 
     def test_delete_account(self):
         """Test deleting the account of a logged-in user."""
-        url = reverse('delete-account')
+        url = '/auth/delete-account'
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
