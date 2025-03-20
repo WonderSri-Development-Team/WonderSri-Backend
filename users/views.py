@@ -366,11 +366,16 @@ def reset_password(request, uidb64, token):
 def change_password(request):
     """Allow logged-in users to change their password."""
     user = request.user
+
     old_password = request.data.get('old_password')
+    confirm_password = request.data.get('confirm-password')
     new_password = request.data.get('new_password')
 
     if not old_password or not new_password:
         return Response({'error': 'Old password and new password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if confirm_password != new_password:
+        return Response({'error': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not user.check_password(old_password):
         return Response({'error': 'Incorrect old password'}, status=status.HTTP_400_BAD_REQUEST)
@@ -470,7 +475,7 @@ def get_account(request):
 @permission_classes([IsAuthenticated])
 def update_profile(request):
     """
-    Allows users to update their profile attributes including profile picture, phone number, and date of birth.
+    Allows users to update their profile attributes including profile picture, phone number, gender and  date of birth.
     """
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
     serializer = ProfileSerializer(user_profile, data=request.data, partial=True)
