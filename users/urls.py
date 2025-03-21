@@ -55,4 +55,6 @@ urlpatterns = [
 
     path('upload-profile-picture/', views.upload_profile_picture, name='upload_profile_picture'),
 
+    path('users/get-profile',views.get_profile, name='get_profile'),
+
 ]
