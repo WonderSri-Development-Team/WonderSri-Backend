@@ -499,6 +499,8 @@ def update_profile(request):
     }
 )
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_profile(request):
     """Retrieve the user's profile data."""
     user_profile = UserProfile.objects.get(user=request.user)

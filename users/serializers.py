@@ -63,7 +63,13 @@ class ProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", required=False)
     class Meta:
         model = UserProfile
-        fields = ['user','dob','phone_number']
+        fields = '__all__'
+        extra_kwargs = {
+            'email': {'source': 'user.email', 'read_only': True},
+            'first_name': {'source': 'user.first_name', 'read_only': True},
+            'last_name': {'source': 'user.last_name', 'read_only': True},
+            'username': {'source': 'user.username', 'read_only': True},
+        }
 
     def update(self, instance, validated_data):
         # Update User model fields
