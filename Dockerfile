@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgdal-dev \
     libgeos-dev \
     python3-gdal \
+    gcc \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Verify GDAL installation
@@ -33,4 +35,4 @@ COPY . /app/
 EXPOSE 10000
 
 # Run migrations and start Django using `gunicorn`
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:10000"]

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'users',
     'location',
     'events',
+    'notifications',
 ]
 
 AUTHENTICATION_BACKENDS = (

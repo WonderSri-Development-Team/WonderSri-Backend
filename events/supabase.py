@@ -2,7 +2,7 @@ import os
 import psycopg2
 from decouple import config
 
-SUPABASE_ = config("SUPABASE_URL")
+SUPABASE_HOST = config("SUPABASE_HOST")
 SUPABASE_KEY = config("SUPABASE_KEY")
 SUPABASE_DB_URL = config("SUPABASE_DB_URL")
 

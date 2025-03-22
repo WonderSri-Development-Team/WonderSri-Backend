@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -5,6 +6,7 @@ from rest_framework import status
 from .models import userDevice
 from .serializers import DeviceSerializer
 from .notifications import send_push_notifications
+import json
 
 # Create your views here.
 
@@ -46,7 +48,7 @@ def save_fcm_token(request):
     return JsonResponse({"error": "Invalid Request"}, status=400)
 
 def notify_user(user, title, body):
-    devices = Device.objects.filter(user=user)
+    devices = userDevice.objects.filter(user=user)
     for device in devices:
         response = send_push_notifications(device.fcm_token, title, body)
         print(f"Notification sent to {device.user_id}: {response}") # for debugging
