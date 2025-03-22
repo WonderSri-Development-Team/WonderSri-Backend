@@ -11,12 +11,14 @@ from django.contrib.auth.tokens import default_token_generator
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from WonderSri_backend import settings
+from .models import UserProfile
 from .utils import send_reset_email, send_email_verification_email
-from .serializers import UserSerializer
+from .serializers import UserSerializer, ProfileSerializer, ProfilePictureSerializer
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from django.contrib.auth import get_user_model
 from django.utils.encoding import force_str
+
 
 # Ensure emails are unique
 User._meta.get_field('email')._unique = True
@@ -343,7 +345,7 @@ def reset_password(request, uidb64, token):
 
 
 @swagger_auto_schema(
-    method='post',
+    method='put',
     operation_description="Change password for logged-in user",
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -358,17 +360,22 @@ def reset_password(request, uidb64, token):
         400: "Bad Request (Incorrect old password or missing fields)"
     }
 )
-@api_view(['POST'])
+@api_view(['PUT'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def change_password(request):
     """Allow logged-in users to change their password."""
     user = request.user
+
     old_password = request.data.get('old_password')
+    confirm_password = request.data.get('confirm-password')
     new_password = request.data.get('new_password')
 
     if not old_password or not new_password:
         return Response({'error': 'Old password and new password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if confirm_password != new_password:
+        return Response({'error': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not user.check_password(old_password):
         return Response({'error': 'Incorrect old password'}, status=status.HTTP_400_BAD_REQUEST)
@@ -453,5 +460,78 @@ def get_account(request):
     user = request.user
 
     return Response({'username': user.username, 'email': user.email}, status=status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='put',
+    operation_description="Allows users to upload or update their profile picture.",
+    request_body=ProfileSerializer,
+    responses={
+        200: ProfileSerializer,
+        400: "Bad Request"
+    }
+)
+@api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    """
+    Allows users to update their profile attributes including profile picture, phone number, gender and  date of birth.
+    """
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    serializer = ProfileSerializer(user_profile, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            "message": "Profile updated successfully!",
+            "profile": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    method='GET',
+    operation_description="Retrieve the user's profile data.",
+    responses={
+        200: ProfileSerializer,
+        401: "Unauthorized"
+    }
+)
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+    """Retrieve the user's profile data."""
+    user_profile = UserProfile.objects.get(user=request.user)
+    serializer = ProfileSerializer(user_profile)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Upload Profile Picture",
+    responses={
+        200: ProfilePictureSerializer,
+        401: "Unauthorized"
+    }
+)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def upload_profile_picture(request):
+    """
+    Allows users to upload or update their profile picture.
+    """
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    serializer = ProfilePictureSerializer(user_profile, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            "message": "Profile picture updated successfully!",
+            "profile_picture_url": user_profile.profile_picture.url  # Return the URL of the uploaded image
+        }, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

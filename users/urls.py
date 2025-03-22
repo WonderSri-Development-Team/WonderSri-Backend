@@ -15,10 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, re_path
-
 from users.swagger import schema_view
 from users import views
 
+app_name = 'users'
 
 urlpatterns = [
     path('login',views.login),
@@ -43,5 +43,18 @@ urlpatterns = [
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='swagger-schema'),
 
     path('verify-email/<str:uidb64>/<str:token>/', views.verify_email, name='verify_email'),
+
+    ## PROFILE
+    path('users/update-profile', views.update_profile, name='update_profile'),
+
+    path('change-email', views.change_email, name='change_email'),
+
+    path('change-username', views.change_username, name='change_username'),
+
+    path('delete-account', views.delete_account, name='delete_account'),
+
+    path('upload-profile-picture/', views.upload_profile_picture, name='upload_profile_picture'),
+
+    path('users/get-profile',views.get_profile, name='get_profile'),
 
 ]

@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from decouple import config
 import os
-
+import storages
 from drf_yasg import middleware
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,16 +23,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-
+#JWT generation
 SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["wondersri-backend.onrender.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","wondersri-backend-test.onrender.com","wondersri-backend.onrender.com"]
 
+
+# GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
@@ -52,7 +54,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'dj_rest_auth',
     'social_django',
-    'location'
+    'location',
+    'storages'
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -99,7 +102,7 @@ WSGI_APPLICATION = 'WonderSri_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': config('dbname'),
         'USER': config('user'),
         'PASSWORD': config('password'),
@@ -170,3 +173,21 @@ SOCIALACCOUNT_SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "http://127.0.0.1:8000/auth/google/callback/"
+
+#AWS S3
+
+# AWS S3 Credentials
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = "wondersri-media"
+AWS_REGION = "eu-north-1"
+
+# Additional S3 settings
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_ADDRESSING_STYLE = 'virtual'
+
+# Use S3 for Media Storage
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
