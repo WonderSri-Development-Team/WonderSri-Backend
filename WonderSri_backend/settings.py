@@ -9,24 +9,28 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
-from pathlib import Path
-from decouple import config
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+import dj_database_url
+
+# Load .env file
+load_dotenv()
+
+from decouple import config
 import storages
 from drf_yasg import middleware
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+#GDAL_LIBRARY_PATH = r"D:/Program Files/OSGeo4W/bin/gdal310.dll"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-#JWT generation
-SECRET_KEY = config('SECRET_KEY')
-
-DEBUG = True
+SECRET_KEY = config('SECRET_KEY', default=os.getenv('SECRET_KEY'))
+DEBUG = config('DEBUG', default=os.getenv("DEBUG", "False")) == "True"
 
 ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","wondersri-backend-test.onrender.com","wondersri-backend.onrender.com"]
 
@@ -41,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'django.contrib.gis',
     'rest_framework',
     'rest_framework.authtoken',
@@ -54,8 +59,10 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'dj_rest_auth',
     'social_django',
+    'storages',
+  
     'location',
-    'storages'
+    'tracking'
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -65,6 +72,8 @@ AUTHENTICATION_BACKENDS = (
 )
 
 MIDDLEWARE = [
+     #'corsheaders.middleware.CorsMiddleware',  for cross origin requests
+    'django.middleware.common.CommonMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -75,6 +84,10 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000", # for local host flutter frontend
+# ]
 
 ROOT_URLCONF = 'WonderSri_backend.urls'
 
@@ -95,20 +108,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'WonderSri_backend.wsgi.application'
+ASGI_APPLICATION = 'WonderSri_backend.asgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': config('dbname'),
-        'USER': config('user'),
-        'PASSWORD': config('password'),
-        'HOST': config('host'),
-        'PORT': config('port', cast=int),
-    }
+    'default': dj_database_url.config(
+        default = os.getenv("DATABASE_URL"),  
+        engine = 'django.contrib.gis.db.backends.postgis',
+    )
 }
 
 
@@ -190,4 +200,3 @@ AWS_S3_ADDRESSING_STYLE = 'virtual'
 
 # Use S3 for Media Storage
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-

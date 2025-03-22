@@ -4,6 +4,7 @@ FROM python:3.12.6-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=WonderSri_backend.settings
 
 # Install GDAL, GEOS, and required dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -32,5 +33,6 @@ COPY . /app/
 # Expose port 10000 (required by Render)
 EXPOSE 10000
 
-# Run migrations and start Django using `gunicorn`
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT"]
+# Run migrations and start the Django application with Daphne
+CMD ["sh", "-c", "python manage.py migrate && daphne -b 0.0.0.0 -p 10000 --proxy-headers WonderSri_backend.asgi:application"]
+
