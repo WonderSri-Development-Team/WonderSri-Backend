@@ -122,6 +122,8 @@ def signup(request):
         user.is_active = False
         user.save()
 
+        UserProfile.objects.create(user=user)
+
         refresh = RefreshToken.for_user(user)
         access = str(refresh.access_token)
 
