@@ -16,7 +16,7 @@ from .serializers import EventSerializer, FoodSerializer, ActivitiesSerializer
 
 
 @swagger_auto_schema(
-    method='GET',
+    method='get',
     responses={200: EventSerializer(many=True), 400: "Bad request"},
 )
 @api_view(['GET'])
@@ -108,7 +108,7 @@ def delete_event(request, pk):
 # --------------------------- ACTIVITY MANAGEMENT ---------------------------
 
 @swagger_auto_schema(
-    method='GET',
+    method='get',
     responses={200: ActivitiesSerializer(many=True), 400: "Bad request"},
 )
 @api_view(['GET'])
@@ -158,7 +158,7 @@ def create_activity(request):
 
 
 @swagger_auto_schema(
-    method='PUT',
+    method='put',
     operation_description="Update an existing activity",
     request_body=ActivitiesSerializer,
     responses={200: ActivitiesSerializer, 404: "Not Found", 400: "Bad Request"},
@@ -179,7 +179,7 @@ def update_activity(request, pk):
 
 
 @swagger_auto_schema(
-    method='DELETE',
+    method='delete',
     operation_description="Delete an activity",
     responses={204: "No Content", 404: "Not Found"},
 )
@@ -250,7 +250,7 @@ def update_food(request, pk):
 
 
 @swagger_auto_schema(
-    method='DELETE',
+    method='delete',
     operation_description="Delete a food item",
     responses={204: "No Content", 404: "Not Found"},
 )
@@ -264,7 +264,7 @@ def delete_food(request, pk):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 @swagger_auto_schema(
-    method='PUT',
+    method='put',
     operation_description="Allows users to upload or update their profile picture.",
     request_body=ProfileSerializer,
     responses={
@@ -289,7 +289,7 @@ def update_profile(request):
 
 
 @swagger_auto_schema(
-    method='GET',
+    method='get',
     operation_description="Retrieve the user's profile data.",
     responses={
         200: ProfileSerializer,
