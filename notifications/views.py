@@ -1,23 +1,14 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import userDevice
+from .models import User, userDevice
 from .serializers import DeviceSerializer
 from .notifications import send_push_notifications
+from .constants import GENERAL_TIPS
 import json
 import random
-
-# General travel tips
-GENERAL_TIPS = [
-    {"title": "Respect Local Customs", "body": "Always be mindful of the local customs and traditions."},
-    {"title": "Dress Modestly in Public Spaces", "body": "Avoid wearing revealing clothes in public areas."},
-    {"title": "Helmet Safety", "body": "Always wear a helmet when riding bikes or scooters."},
-    {"title": "Footwear Etiquette", "body": "Remove your shoes before entering temples or homes."},
-    {"title": "Public Transport", "body": "Keep small change handy for bus and train fares."},
-    {"title": "Wildlife Safety", "body": "Do not feed or disturb animals in national parks."},
-]
 
 class RegisterDeviceView(APIView):
     def post(self, request):
@@ -28,6 +19,28 @@ class RegisterDeviceView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class SendNotificationView(APIView):
+    def post(self, request):
+        """
+        Send a notification to a user.
+        Accepts:
+        - `user_id`: The ID of the user to send the notification to.
+        - `title`: The notification title.
+        - `body`: The notification body.
+        - `notification_type`: (Optional) The type of notification (e.g., "general", "event", "scam_alert").
+        """
+        user_id = request.data.get("user_id")
+        title = request.data.get("title")
+        body = request.data.get("body")
+        notification_type = request.data.get("notification_type", "custom")
+
+        if not user_id:
+            return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = get_object_or_404(User, id=user_id)
+
+        notify_user(user, title, body, notification_type)
+        
+        return Response({"message": f"Notification sent to user {user_id}"}, status=status.HTTP_200_OK)
     def post(self, request):
         registration_id = request.data.get('registration_id')
         title = request.data.get('title', 'Default Title')

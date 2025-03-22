@@ -6,8 +6,8 @@ import json
 from decouple import config
 
 import random
-from .views import GENERAL_TIPS
-from .models import User, UserDevice
+from notifications.constants import GENERAL_TIPS
+from .models import User, userDevice
 
 def initialize_firebase():
     if not firebase_admin._apps: # Avoid re-initialization
@@ -34,7 +34,7 @@ def send_general_tips():
     if not GENERAL_TIPS:
         return
     tip = random.choice(GENERAL_TIPS)
-    devices = UserDevice.objects.filter(user=User)
+    devices = userDevice.objects.filter(user=User)
 
     for device in devices:
         send_push_notifications(device.fcm_token, tip["title"], tip["body"])
