@@ -69,3 +69,6 @@ Pipfile.lock
 
 .idea
 *.whl
+tracking/responsetime.py
+tracking/templates/mapLeaflet.html
+tracking/templates/index.html

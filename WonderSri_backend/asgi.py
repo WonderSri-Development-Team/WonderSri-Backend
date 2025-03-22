@@ -8,16 +8,16 @@ https://docs.djangoproject.com/en/5.1/howto/deployment/asgi/
 """
 
 import os
-import django  # ✅ Ensure Django is initialized before importing anything else
+import django 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'WonderSri_backend.settings')
 
-django.setup()  # ✅ Load Django before importing anything that depends on it
+django.setup()
 
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-import tracking.routing  # ✅ Import after Django is fully set up
+import tracking.routing
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
@@ -28,4 +28,3 @@ application = ProtocolTypeRouter({
     ),
 })
 
-app = application  # ✅ This is fine if needed for external use

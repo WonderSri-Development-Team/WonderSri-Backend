@@ -42,8 +42,6 @@ class locationConsumer(AsyncWebsocketConsumer):
         elif data.get('type') == 'location':
             latitude = data.get('latitude')
             longitude = data.get('longitude')
-            # latitude = 7.089953576246863
-            # longitude = 79.88710594626576
             print(latitude, longitude)
             main_geofence = await get_current_main_geofence(latitude=latitude, longitude=longitude)
             print(main_geofence)
