@@ -3,14 +3,12 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import User, userDevice
+from .models import User, UserDevice
 from .serializers import DeviceSerializer
-from .notifications import send_push_notifications
 from .constants import GENERAL_TIPS, notification_schema
 import json
 import random
 from firebase_admin import messaging
-
 from decouple import config
 from pyfcm import FCMNotification
 
@@ -18,6 +16,11 @@ push_service = FCMNotification(api_key=config('FIREBASE_API_KEY'))
 
 class RegisterDeviceView(APIView):
     def post(self, request):
+        fcm_token = request.data.get("fcm_token")
+        
+        if not fcm_token:
+            return Response({"error": "FCM Token is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
         serializer = DeviceSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -60,7 +63,7 @@ def save_fcm_token(request):
             fcm_token = data.get("fcm_token")
 
             if (user_id and fcm_token):
-                device, created = userDevice.objects.update_or_create(
+                device, created = UserDevice.objects.update_or_create(
                     user_id=user_id, defaults={"fcm_token": fcm_token}
                 )
                 return JsonResponse({"message": "FCM Token Saved!"})
@@ -76,7 +79,7 @@ def notify_user(user, title=None, body=None, notification_type="general"):
     - If title and body are provided, sends a custom notification.
     - If notification_type is "general", sends a random general travel tip.
     """
-    devices = userDevice.objects.filter(user=user)
+    devices = UserDevice.objects.filter(user=user)
 
     if not devices:
         print(f"No registered devices for user {user.id}")
@@ -98,20 +101,20 @@ def notify_user(user, title=None, body=None, notification_type="general"):
         print(f"Notification sent to user {user.id} ({device.fcm_token}): {response}")  # Debugging
 
 
-def welcome_notification(user):
-    """
-    Sends a welcome notification to the user.
-    """
-    if not user.fcm_token:
-        print(f"No FCM token found for user {user.id}")
-        return
+# def welcome_notification(user):
+#     """
+#     Sends a welcome notification to the user.
+#     """
+#     if not user.fcm_token:
+#         print(f"No FCM token found for user {user.id}")
+#         return
     
-    # Send a welcome notification to the user
-    return notify_user(
-        user=user,
-        title="Welcome to WonderSri!",
-        body="Thanks for trying out our app! Get ready to explore the wonders of Sri Lanka with WonderSri!"
-        )
+#     # Send a welcome notification to the user
+#     return notify_user(
+#         user=user,
+#         title="Welcome to WonderSri!",
+#         body="Thanks for trying out our app! Get ready to explore the wonders of Sri Lanka with WonderSri!"
+#         )
         
 def send_push_notifications(fcm_token, title, body):
     message = messaging.Message(
@@ -133,7 +136,7 @@ def send_general_tips():
     users = User.objects.all()
     
     for user in users:
-        devices = userDevice.objects.filter(user=user)
+        devices = UserDevice.objects.filter(user=user)
         for device in devices:
             send_push_notifications(device.fcm_token, tip["title"], tip["body"])
             print(f"Notification sent to {device.user_id}")
