@@ -54,8 +54,6 @@ DEBUG = config('DEBUG', default=os.getenv("DEBUG", "False")) == "True"
 ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","wondersri-backend-test.onrender.com","wondersri-backend.onrender.com","wondersri-backend-tracking.onrender.com"]
 
 
-GDAL_LIBRARY_PATH = r"C:\OSGeo4W\bin\gdal310.dll"
-
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
