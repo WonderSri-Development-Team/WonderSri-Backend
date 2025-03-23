@@ -35,4 +35,4 @@ COPY . /app/
 EXPOSE 10000
 
 # Run migrations and start Django using `gunicorn`
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:10000"]
+CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:10000"]
