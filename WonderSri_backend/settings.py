@@ -24,7 +24,9 @@ SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'wondersri-backend-gz39.onrender.com']
+
+PORT = os.getenv("PORT", "10000")
 
 # Application definition
 
