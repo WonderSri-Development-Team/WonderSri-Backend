@@ -57,4 +57,6 @@ urlpatterns = [
 
     path('users/get-profile',views.get_profile, name='get_profile'),
 
+    path('token/refresh/', views.refresh_token, name='token_refresh'),
 ]
+
