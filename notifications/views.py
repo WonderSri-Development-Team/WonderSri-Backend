@@ -9,10 +9,6 @@ from .constants import GENERAL_TIPS, notification_schema
 import json
 import random
 from firebase_admin import messaging
-from decouple import config
-from pyfcm import FCMNotification
-
-push_service = FCMNotification(config('FIREBASE_API_KEY'))
 
 class RegisterDeviceView(APIView):
     def post(self, request):
