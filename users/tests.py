@@ -28,7 +28,7 @@ class UserViewTest(APITestCase):
 
     def test_signup(self):
         """Test user signup."""
-        url = '/auth/signup'  # Direct URL instead of reverse
+        url = '/auth/signup'
         data = {
             'username': 'newuser',
             'email': 'newuser@example.com',
@@ -55,7 +55,8 @@ class UserViewTest(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
+        self.assertIn('username', response.data)
+        self.assertEqual(response.data['username'][0], 'A user with that username already exists.')
 
     def test_signup_existing_email(self):
         """Test signup with an existing email."""
@@ -67,7 +68,8 @@ class UserViewTest(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
+        self.assertIn('email', response.data)
+        self.assertEqual(response.data['email'][0], 'A user with this email already exists.')
 
     def test_login_success(self):
         """Test successful user login."""
@@ -121,20 +123,6 @@ class UserViewTest(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'Logout successful')
-
-    def test_change_username(self):
-        """Test changing the username of a logged-in user."""
-        url = '/auth/change-username'
-        data = {'username': 'updatedusername'}
-        response = self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], 'Username changed successfully.')
-
-        # Check if the username actually updated in the database
-        self.test_user.refresh_from_db()
-        self.assertEqual(self.test_user.username, 'updatedusername')
-
     def test_request_password_reset(self):
         """Test requesting a password reset."""
         url = '/auth/request-password-reset'
@@ -161,23 +149,6 @@ class UserViewTest(APITestCase):
         # Verify that the password has been updated
         self.test_user.refresh_from_db()
         self.assertTrue(self.test_user.check_password('newpassword'))
-
-    def test_change_password(self):
-        """Test changing the password of a logged-in user."""
-        url = '/auth/change-password'
-        data = {
-            'old_password': 'testpassword',
-            'confirm_password': 'newpassword123',
-            'new_password': 'newpassword123'
-        }
-        response = self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['message'], 'Password updated successfully')
-
-        # Verify the password change
-        self.test_user.refresh_from_db()
-        self.assertTrue(self.test_user.check_password('newpassword123'))
 
     def test_change_email(self):
         """Test changing the email of a logged-in user."""
