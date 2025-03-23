@@ -37,7 +37,7 @@ def send_email_verification_email(user):
     """
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    verification_link = f"https://wondersri-backend.onrender.com/auth/verify-email/{uid}/{token}/"
+    verification_link = f"https://wondersri-backend-tracking.onrender.com/auth/verify-email/{uid}/{token}/"
 
     print(verification_link)
 
