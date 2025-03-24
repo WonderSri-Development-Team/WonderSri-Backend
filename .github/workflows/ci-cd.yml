@@ -24,6 +24,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Tests
+        env:
+          EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
           source venv/bin/activate
           python manage.py test
