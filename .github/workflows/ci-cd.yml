@@ -1,4 +1,4 @@
-name: Django CI/CD Pipeline
+name: Django CI/CD Pipeline with Docker
 
 on:
   push:
@@ -6,24 +6,19 @@ on:
       - main
 
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set Up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.12.6'
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      - name: Install Dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
+      - name: Build Docker Image
+        run: docker build -t my-django-app:latest .
 
-      - name: Run Tests
+      - name: Run Tests in Docker
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -35,8 +30,7 @@ jobs:
           SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET: ${{ secrets.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET }}
           SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI: ${{ secrets.SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI }}
         run: |
-          source venv/bin/activate
-          python manage.py test
+          docker run --env-file .env my-django-app:latest python manage.py test
 
       - name: Deploy to Render
         if: success()  # Only deploy if tests pass
