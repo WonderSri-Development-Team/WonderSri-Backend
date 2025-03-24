@@ -16,21 +16,24 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker Image
-        run: docker build -t my-django-app:latest .
+        run: docker build -t wondersri-backend:latest .
+
+      - name: Create .env file
+        run: |
+          touch .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}" >> .env
+          echo "EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=${{ secrets.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY }}" >> .env
+          echo "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=${{ secrets.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET }}" >> .env
+          echo "SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI=${{ secrets.SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI }}" >> .env
 
       - name: Run Tests in Docker
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-          EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          SOCIAL_AUTH_GOOGLE_OAUTH2_KEY: ${{ secrets.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY }}
-          SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET: ${{ secrets.SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET }}
-          SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI: ${{ secrets.SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI }}
         run: |
-          docker run --env-file .env my-django-app:latest python manage.py test
+          docker run --env-file .env wondersri-backend:latest python manage.py test
 
       - name: Deploy to Render
         if: success()  # Only deploy if tests pass
