@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Tests in Docker
         run: |
-          docker run --env-file .env wondersri-backend:latest python manage.py test
+          docker run --env-file .env wondersri-backend:latest python manage.py test --keepdb
 
       - name: Deploy to Render
         if: success()  # Only deploy if tests pass
