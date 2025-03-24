@@ -105,7 +105,6 @@ python-dotenv==1.0.1
 python3-openid==3.2.0
 pytweening==1.2.0
 pytz==2025.1
-pywin32==310
 PyYAML==6.0.2
 pyzmq==26.3.0
 referencing==0.35.1
