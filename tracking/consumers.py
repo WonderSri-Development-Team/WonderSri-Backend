@@ -44,13 +44,15 @@ class locationConsumer(AsyncWebsocketConsumer):
                     'type': 'error',
                     'status': "Invalid payload"
                 }))
+                    return
                 sub_geofences = await get_sub_geofences(main_geofence_id)
                 print(sub_geofences)
                 await self.send(json.dumps({
                     'type': 'subGeofences',
                     'sub_geofences': sub_geofences
                 }))
-                
+            
+            # return current main geofence
             elif data.get('type') == 'location':
                 latitude = data.get('latitude')
                 longitude = data.get('longitude')
@@ -60,6 +62,7 @@ class locationConsumer(AsyncWebsocketConsumer):
                     'type': 'error',
                     'status': "Invalid payload"
                 }))
+                    return
                 main_geofence = await get_current_main_geofence(latitude=latitude, longitude=longitude)
                 print(main_geofence)
                 sub_geofences = await get_current_sub_geofence(latitude=latitude, longitude=longitude)
@@ -69,7 +72,8 @@ class locationConsumer(AsyncWebsocketConsumer):
                     'current_main_geofences' : main_geofence,
                     'current_sub_geofences' : sub_geofences
                 }))
-                
+            
+            # return all geofences
             elif data.get('type') == 'allGeofences':
                 all_geofences = await get_all_geofences()
                 await self.send(json.dumps({

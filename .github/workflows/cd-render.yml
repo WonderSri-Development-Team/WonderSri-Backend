@@ -1,0 +1,24 @@
+name: CD to Render
+
+on:
+  workflow_run:
+    workflows: ["django backend CI"] 
+    branches: [main]
+    types: [completed]
+    branches-ignore: 
+      - 'releases/**'
+
+jobs:
+  deploy:
+    environment: production
+    permissions:
+      deployments: write
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deployment
+        uses: AndreasFurster/render-deploy@v2.0.0
+        with:
+          render-token: ${{ secrets.RENDER_TOKEN }}
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          wait-for-deploy: true 
