@@ -8,5 +8,4 @@ urlpatterns = [
     path('api/', include('location.urls')),
     path('notifications/', include('notifications.urls')),
     path('send-notification/', SendNotificationView.as_view(), name='send_notification'),
-    path('events/', include('events.urls')),
 ]

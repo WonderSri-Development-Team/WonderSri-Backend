@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     # My apps
     'users',
     'location',
-    'events',
     'notifications',
 ]
 

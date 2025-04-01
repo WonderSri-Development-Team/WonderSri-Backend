@@ -96,21 +96,6 @@ def notify_user(user, title=None, body=None, notification_type="general"):
         response = send_push_notifications(device.fcm_token, title, body)
         print(f"Notification sent to user {user.id} ({device.fcm_token}): {response}")  # Debugging
 
-
-# def welcome_notification(user):
-#     """
-#     Sends a welcome notification to the user.
-#     """
-#     if not user.fcm_token:
-#         print(f"No FCM token found for user {user.id}")
-#         return
-    
-#     # Send a welcome notification to the user
-#     return notify_user(
-#         user=user,
-#         title="Welcome to WonderSri!",
-#         body="Thanks for trying out our app! Get ready to explore the wonders of Sri Lanka with WonderSri!"
-#         )
         
 def send_push_notifications(fcm_token, title, body):
     message = messaging.Message(
