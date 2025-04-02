@@ -11,17 +11,18 @@ from django.contrib.auth.tokens import default_token_generator
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from WonderSri_backend import settings
+from .models import UserProfile
 from .utils import send_reset_email, send_email_verification_email
-from .serializers import UserSerializer
+from .serializers import UserSerializer, ProfileSerializer, ProfilePictureSerializer
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from django.contrib.auth import get_user_model
 from django.utils.encoding import force_str
 
-# Ensure emails are unique
+
 User._meta.get_field('email')._unique = True
 
-# Reusable response schema for authentication responses
+
 auth_response_schema = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
@@ -72,14 +73,13 @@ def login(request):
         if not user.check_password(password):
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Ensure email is verified (assuming you have an is_verified field)
-        if not user.is_active:  # Adjust this if you're using a different field
+
+        if not user.is_active:
             return Response({'error': 'Please verify your email before logging in.'}, status=status.HTTP_403_FORBIDDEN)
 
     except User.DoesNotExist:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)  # Prevent user enumeration
 
-    # ✅ Generate JWT tokens ONLY after all checks pass
     refresh = RefreshToken.for_user(user)
     serializer = UserSerializer(instance=user)
 
@@ -88,9 +88,6 @@ def login(request):
         'access': str(refresh.access_token),
         'user': serializer.data
     }, status=status.HTTP_200_OK)
-
-
-
 
 @swagger_auto_schema(
     method='post',
@@ -119,6 +116,8 @@ def signup(request):
         user = serializer.save()
         user.is_active = False
         user.save()
+
+        UserProfile.objects.create(user=user)
 
         refresh = RefreshToken.for_user(user)
         access = str(refresh.access_token)
@@ -156,6 +155,41 @@ def logout(request):
 
 
 @swagger_auto_schema(
+    method='post',
+    operation_description="Refresh access token using refresh token",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={'refresh': openapi.Schema(type=openapi.TYPE_STRING, description="Refresh token")},
+        required=['refresh'],
+    ),
+    responses={
+        200: openapi.Response(description="Token refreshed successfully", schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'access': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        )),
+        401: "Invalid or expired refresh token"
+    }
+)
+@api_view(['POST'])
+def refresh_token(request):
+    """Get a new access token using refresh token."""
+    refresh_token = request.data.get('refresh')
+
+    if not refresh_token:
+        return Response({'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        refresh = RefreshToken(refresh_token)
+        return Response({
+            'access': str(refresh.access_token)
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': 'Invalid or expired refresh token'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@swagger_auto_schema(
     method='get',
     operation_description="Test authentication endpoint",
     responses={200: "Authenticated successfully"}
@@ -189,7 +223,7 @@ def googleoauthlogin(request):
         return Response({'error': 'ID Token is required'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # Replace 'YOUR_GOOGLE_CLIENT_ID' with your actual Google OAuth client ID
+
         CLIENT_ID = settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY
 
         # Verify the Google ID token
@@ -343,32 +377,38 @@ def reset_password(request, uidb64, token):
 
 
 @swagger_auto_schema(
-    method='post',
+    method='put',
     operation_description="Change password for logged-in user",
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
             'old_password': openapi.Schema(type=openapi.TYPE_STRING, description="Current password"),
+            'confirm_password': openapi.Schema(type=openapi.TYPE_STRING, description="New password confirmation"),
             'new_password': openapi.Schema(type=openapi.TYPE_STRING, description="New password"),
         },
-        required=['old_password', 'new_password'],
+        required=['old_password', 'new_password','confirm_password'],
     ),
     responses={
         200: "Password updated successfully",
         400: "Bad Request (Incorrect old password or missing fields)"
     }
 )
-@api_view(['POST'])
+@api_view(['PUT'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def change_password(request):
     """Allow logged-in users to change their password."""
     user = request.user
+
     old_password = request.data.get('old_password')
+    confirm_password = request.data.get('confirm_password')
     new_password = request.data.get('new_password')
 
     if not old_password or not new_password:
         return Response({'error': 'Old password and new password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if confirm_password != new_password:
+        return Response({'error': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not user.check_password(old_password):
         return Response({'error': 'Incorrect old password'}, status=status.HTTP_400_BAD_REQUEST)
@@ -453,5 +493,95 @@ def get_account(request):
     user = request.user
 
     return Response({'username': user.username, 'email': user.email}, status=status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='put',
+    operation_description="Allows users to upload or update their profile picture.",
+    request_body=ProfileSerializer,
+    responses={
+        200: ProfileSerializer,
+        400: "Bad Request"
+    }
+)
+@api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    """
+    Allows users to update their profile attributes including profile picture, phone number, gender and  date of birth.
+    """
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    serializer = ProfileSerializer(user_profile, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            "message": "Profile updated successfully!",
+            "profile": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    method='GET',
+    operation_description="Retrieve the user's profile data.",
+    responses={
+        200: ProfileSerializer,
+        401: "Unauthorized"
+    }
+)
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+    """Retrieve the user's profile data."""
+    user_profile = UserProfile.objects.get(user=request.user)
+    serializer = ProfileSerializer(user_profile)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Upload Profile Picture",
+    request_body=ProfilePictureSerializer,
+    responses={
+        200: ProfilePictureSerializer,
+        400: "Bad Request",
+        401: "Unauthorized"
+    }
+)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def upload_profile_picture(request):
+    """
+    Allows users to upload or update their profile picture.
+    """
+    try:
+        # Get or create the user's profile
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+        # Initialize the serializer with the user's profile and request data
+        serializer = ProfilePictureSerializer(user_profile, data=request.data, partial=True)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            # Return the serialized data with a success message
+            return Response({
+                "message": "Profile picture updated successfully!",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+
+        # Return validation errors if the data is invalid
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        # Handle unexpected errors
+        return Response({
+            "error": str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 

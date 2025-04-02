@@ -9,27 +9,49 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
-from pathlib import Path
-from decouple import config
 import os
+from datetime import timedelta
+from pathlib import Path
+from dotenv import load_dotenv
+import dj_database_url
 
+# Load .env file
+load_dotenv()
+
+from decouple import config
+import storages
 from drf_yasg import middleware
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-#JWT GENERATION
-SECRET_KEY = config('SECRET_KEY')
+# GDAL_LIBRARY_PATH = r"D:/Program Files/OSGeo4W/bin/gdal310.dll"
+#JWT GENERATIONSECRET_KEY = config('SECRET_KEY', default=os.getenv('SECRET_KEY'))
 
-DEBUG = True
+# JWT Settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+}
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'wondersri-backend-gz39.onrender.com']
+DEBUG = config('DEBUG', default=os.getenv("DEBUG", "False")) == "True"
+
+ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","wondersri-backend-test.onrender.com","wondersri-backend.onrender.com","wondersri-backend-tracking.onrender.com"]
 
 PORT = os.getenv("PORT", "10000")
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,6 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
 
     # third party apps
+    'django.contrib.gis',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
@@ -55,8 +78,11 @@ INSTALLED_APPS = [
 
     # My apps
     'users',
+    'storages',
     'location',
     'notifications',
+    'channels',
+    'tracking',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -66,6 +92,8 @@ AUTHENTICATION_BACKENDS = (
 )
 
 MIDDLEWARE = [
+     #'corsheaders.middleware.CorsMiddleware',  for cross origin requests
+    'django.middleware.common.CommonMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,6 +104,10 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000", # for local host flutter frontend
+# ]
 
 ROOT_URLCONF = 'WonderSri_backend.urls'
 
@@ -96,20 +128,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'WonderSri_backend.wsgi.application'
+ASGI_APPLICATION = 'WonderSri_backend.asgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config("DB_NAME"),
-        'USER': config("SUPABASE_USER"),
-        'PASSWORD': config("SUPABASE_DB_PASSWORD"),
-        'HOST': config("SUPABASE_HOST"),
-        'PORT': config("PORT", cast=int), #change default port?
-    }
+    'default': dj_database_url.config(
+        default = os.getenv("DATABASE_URL"),  
+        engine = 'django.contrib.gis.db.backends.postgis',
+    )
 }
 
 
@@ -175,10 +204,43 @@ SOCIALACCOUNT_SCOPES = [
 ]
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = "http://127.0.0.1:8000/auth/google/callback/"
 
+#AWS S3
+
+# AWS S3 Credentials
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = "wondersri-media"
+AWS_REGION = "eu-north-1"
+
+# Additional S3 settings
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_ADDRESSING_STYLE = 'virtual'
+
+# Use S3 for Media Storage
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+
+#AWS S3
+
+# AWS S3 Credentials
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = "wondersri-media"
+AWS_REGION = "eu-north-1"
+
+# Additional S3 settings
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_ADDRESSING_STYLE = 'virtual'
+
+# Use S3 for Media Storage
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+
 # Firebase Cloud Messaging Settings
 
 # FIREBASE_CREDENTIALS_PATH = BASE_DIR / config('FIREBASE_CREDENTIALS_PATH')
-
 FIREBASE_API_KEY = config('FIREBASE_API_KEY')
 FIREBASE_APP_ID=config('FIREBASE_APP_ID')
 FIREBASE_PROJECT_ID=config('FIREBASE_PROJECT_ID')

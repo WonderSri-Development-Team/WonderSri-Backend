@@ -21,6 +21,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+backend_env/
 
 # Static files
 /static/
@@ -67,4 +68,7 @@ dist/
 Pipfile.lock
 
 .idea
-config/
+*.whl
+tracking/responsetime.py
+tracking/templates/mapLeaflet.html
+tracking/templates/index.html

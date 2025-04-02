@@ -4,8 +4,8 @@ from notifications.views import SendNotificationView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('users.urls')),  # Importing user auth routes
-    path('api/', include('location.urls')),
+    path('auth/', include('users.urls', namespace='users')),
+    path('location/', include('location.urls')),
     path('notifications/', include('notifications.urls')),
     path('send-notification/', SendNotificationView.as_view(), name='send_notification'),
 ]

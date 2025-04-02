@@ -7,9 +7,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import UserProfile
-# from users.serializers import UserSerializer, ProfileSerializer
+from users.serializers import UserSerializer, ProfileSerializer
 from .models import Event, Activity, Food
-from .serializers import EventSerializer, FoodSerializer, ActivitiesSerializer, ProfileSerializer
+from .serializers import EventSerializer, FoodSerializer, ActivitiesSerializer
+
 
 # --------------------------- LOCATION-BASED EVENTS ---------------------------
 
@@ -301,3 +302,4 @@ def get_profile(request):
     user_profile = UserProfile.objects.get(user=request.user)
     serializer = ProfileSerializer(user_profile)
     return Response(serializer.data, status=status.HTTP_200_OK)
+

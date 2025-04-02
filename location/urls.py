@@ -8,4 +8,6 @@ urlpatterns = [
     path('create-activities', views.create_activity),
     path('create-food', views.create_food),
     path('foods', views.list_food),
+
 ]
+
