@@ -26,7 +26,9 @@ from drf_yasg import middleware
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # GDAL_LIBRARY_PATH = r"D:/Program Files/OSGeo4W/bin/gdal310.dll"
-#JWT GENERATIONSECRET_KEY = config('SECRET_KEY', default=os.getenv('SECRET_KEY'))
+
+#JWT GENERATION
+SECRET_KEY = config('SECRET_KEY', default=os.getenv('SECRET_KEY'))
 
 # JWT Settings
 SIMPLE_JWT = {
@@ -62,7 +64,6 @@ INSTALLED_APPS = [
     'django.contrib.gis',
 
     # third party apps
-    'django.contrib.gis',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
@@ -74,7 +75,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'social_django',
-    'storages',
 
     # My apps
     'users',
@@ -96,7 +96,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -221,23 +220,6 @@ AWS_S3_ADDRESSING_STYLE = 'virtual'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 
-#AWS S3
-
-# AWS S3 Credentials
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = "wondersri-media"
-AWS_REGION = "eu-north-1"
-
-# Additional S3 settings
-AWS_DEFAULT_ACL = 'public-read'
-AWS_S3_SIGNATURE_VERSION = 's3v4'
-AWS_S3_ADDRESSING_STYLE = 'virtual'
-
-# Use S3 for Media Storage
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-
 # Firebase Cloud Messaging Settings
 
 # FIREBASE_CREDENTIALS_PATH = BASE_DIR / config('FIREBASE_CREDENTIALS_PATH')
@@ -248,5 +230,5 @@ FIREBASE_MESSAGING_SENDER_ID = config('FIREBASE_MESSAGING_SENDER_ID')
 # FCM_SERVER_KEY = config('FCM_SERVER_KEY')
 
 # Read supabase variables from .env
-SUPABASE_HOST = config("SUPABASE_HOST")
-SUPABASE_KEY = config("SUPABASE_KEY")
+# SUPABASE_HOST = config("SUPABASE_HOST")
+# SUPABASE_KEY = config("SUPABASE_KEY")

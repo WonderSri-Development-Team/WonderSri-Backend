@@ -3,7 +3,11 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view
+from django.contrib.gis.geos import Point 
+from django.contrib.gis.measure import D # For distance calculations
 from .models import User, UserDevice
+from location.models import Event, Location, Activity, Food
 from .serializers import DeviceSerializer
 from .constants import GENERAL_TIPS, notification_schema
 import json
@@ -121,3 +125,40 @@ def send_general_tips():
         for device in devices:
             send_push_notifications(device.fcm_token, tip["title"], tip["body"])
             print(f"Notification sent to {device.user_id}")
+
+@api_view(['POST'])
+def check_nearby_events(request):
+    """
+    Check if there are any events nearby the user's location.
+    Accepts:
+    - `user_id`: The ID of the user to check for events.
+    - `latitude`: The latitude of the user's location.
+    - `longitude`: The longitude of the user's location.
+    """
+    user_id = request.data.get("user_id")
+    latitude = request.data.get("latitude")
+    longitude = request.data.get("longitude")
+
+    if not user_id or not latitude or not longitude:
+        return Response({"error": "User ID, latitude, and longitude are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user_location = Point(float(longitude), float(latitude), srid=4326)
+    except ValueError:
+        return Response({"error": "Invalid location data"}, status=status.HTTP_400_BAD_REQUEST)
+
+    nearby_events = Event.objects.filter(
+        location__coordinates__distance_lte=(user_location, D(km=5)))
+
+    if nearby_events:
+        for event in nearby_events:
+            user = get_object_or_404(User, id=user_id)
+            notify_user(
+                user=user,
+                title=event.title,
+                body=event.description,
+                notification_type="event"
+            )
+        return Response({"message": "Notifications sent for nearby events"}, status=status.HTTP_200_OK)
+    else:
+        return Response({"message": "No nearby events found"}, status=status.HTTP_200_OK)
