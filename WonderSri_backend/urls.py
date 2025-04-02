@@ -7,5 +7,4 @@ urlpatterns = [
     path('auth/', include('users.urls', namespace='users')),
     path('location/', include('location.urls')),
     path('notifications/', include('notifications.urls')),
-    path('send-notification/', SendNotificationView.as_view(), name='send_notification'),
 ]

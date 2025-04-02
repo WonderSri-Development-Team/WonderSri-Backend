@@ -50,10 +50,14 @@ class SendNotificationView(APIView):
         notify_user(user, title, body, notification_type)
         
         return Response({"message": f"Notification sent to user {user_id}"}, status=status.HTTP_200_OK)
+
         
-class GetNotificationSchemaView(APIView):
-    def get(self, request):
-        return Response(notification_schema)
+@api_view(['GET'])
+def get_notification_schema(request):
+    """
+    Returns the schema for notifications.
+    """
+    return Response(notification_schema, status=status.HTTP_200_OK)
 
 def save_fcm_token(request):
     if request.method == "POST":
