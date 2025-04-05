@@ -16,12 +16,18 @@ from firebase_admin import messaging
 
 class RegisterDeviceView(APIView):
     def post(self, request):
+        user_id = request.data.get("user_id")
         fcm_token = request.data.get("fcm_token")
         
-        if not fcm_token:
-            return Response({"error": "FCM Token is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not user_id or not fcm_token:
+            return Response({"error": "User ID and FCM Token are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        device, created = UserDevice.objects.update_or_create(
+            user_id=user_id,
+            defaults={"fcm_token": fcm_token}
+        )
         
-        serializer = DeviceSerializer(data=request.data)
+        serializer = DeviceSerializer(device)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -58,24 +64,6 @@ def get_notification_schema(request):
     Returns the schema for notifications.
     """
     return Response(notification_schema, status=status.HTTP_200_OK)
-
-def save_fcm_token(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            user_id = data.get("user_id")
-            fcm_token = data.get("fcm_token")
-
-            if (user_id and fcm_token):
-                device, created = UserDevice.objects.update_or_create(
-                    user_id=user_id, defaults={"fcm_token": fcm_token}
-                )
-                return JsonResponse({"message": "FCM Token Saved!"})
-            return JsonResponse({"error": "Missing user_id or fcm_token"}, status=400)
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON data"}, status=400)
-    return JsonResponse({"error": "Invalid Request"}, status=400)
-
 
 def notify_user(user, title=None, body=None, notification_type="general"):
     """
