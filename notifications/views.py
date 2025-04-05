@@ -34,15 +34,15 @@ class RegisterDeviceView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class SendNotificationView(APIView):
+    """
+    Send a notification to a specific user.
+    Request Body:
+    - user_id (int): Required. The ID of the user to send the notification to.
+    - title (str): Optional if using 'general' type. The title of the notification.
+    - body (str): Optional if using 'general' type. The body of the notification.
+    - notification_type (str): Optional. Default is 'custom'. Options: 'custom', 'general', 'event', etc.
+    """
     def post(self, request):
-        """
-        Send a notification to a user.
-        Accepts:
-        - `user_id`: The ID of the user to send the notification to.
-        - `title`: The notification title.
-        - `body`: The notification body.
-        - `notification_type`: (Optional) The type of notification (e.g., "general", "event", "scam_alert").
-        """
         user_id = request.data.get("user_id")
         title = request.data.get("title")
         body = request.data.get("body")
@@ -53,8 +53,12 @@ class SendNotificationView(APIView):
 
         user = get_object_or_404(User, id=user_id)
 
-        notify_user(user, title, body, notification_type)
-        
+        if notification_type == "custom" and (not title or not body):
+            return Response({"error": "Custom notifications require a title and body."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        send_notification_to_user(user, title, body, notification_type)
+
         return Response({"message": f"Notification sent to user {user_id}"}, status=status.HTTP_200_OK)
 
         
@@ -65,58 +69,48 @@ def get_notification_schema(request):
     """
     return Response(notification_schema, status=status.HTTP_200_OK)
 
-def notify_user(user, title=None, body=None, notification_type="general"):
-    """
-    Sends notifications of different types to the user.
-    - If title and body are provided, sends a custom notification.
-    - If notification_type is "general", sends a random general travel tip.
-    """
-    devices = UserDevice.objects.filter(user=user)
-
-    if not devices:
-        print(f"No registered devices for user {user.id}")
-        return
-
-    # Pick a general tip if no title/body is given
-    if notification_type == "general" and not title and not body:
-        tip = random.choice(GENERAL_TIPS)
-        title = tip["title"]
-        body = tip["body"]
-
-    # Ensure title and body are not empty
-    if not title or not body:
-        print("Skipping notification: title or body missing.")
-        return
-
-    for device in devices:
-        response = send_push_notifications(device.fcm_token, title, body)
-        print(f"Notification sent to user {user.id} ({device.fcm_token}): {response}")  # Debugging
-
         
-def send_push_notifications(fcm_token, title, body):
+def send_notification_to_device(fcm_token, title, body):
     message = messaging.Message(
-        notification=messaging.Notification(
-            title=title,
-            body=body,
-        ),
+        notification=messaging.Notification(title=title, body=body),
         token=fcm_token,
     )
     response = messaging.send(message)
-    print("Notification Sent:", response)
+    print(f"Notification Sent to {fcm_token}: {response}")
     return response
 
-def send_general_tips():
-    """Send a random general tip as a notification to the user."""
-    if not GENERAL_TIPS:
+
+def send_notification_to_user(user, title=None, body=None):
+    """
+    Centralized function to send notifications to all devices of a user.
+    """
+    devices = UserDevice.objects.filter(user=user)
+
+    if not devices.exists():
+        print(f"No registered devices for user {user.id}")
         return
-    tip = random.choice(GENERAL_TIPS)
+
+    for device in devices:
+        send_notification_to_device(device.fcm_token, title, body)
+
+def send_general_tip_to_user(user):
+    """Send a random general tip as a notification to the user."""
+    users = User.objects.all()
+    for user in users:
+        if not GENERAL_TIPS:
+            return
+        tip = random.choice(GENERAL_TIPS)
+        send_notification_to_user(user, tip["title"], tip["body"])
+
+
+def notify_new_event(event):
+    """Notify all users about a new event."""
     users = User.objects.all()
     
     for user in users:
-        devices = UserDevice.objects.filter(user=user)
-        for device in devices:
-            send_push_notifications(device.fcm_token, tip["title"], tip["body"])
-            print(f"Notification sent to {device.user_id}")
+        send_notification_to_user(user, event.title, event.description)
+        print(f"Notification sent to {user.username} about new event: {event.title}")
+
 
 @api_view(['POST'])
 def check_nearby_events(request):
@@ -135,6 +129,7 @@ def check_nearby_events(request):
         return Response({"error": "User ID, latitude, and longitude are required"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
+        user = get_object_or_404(User, id=user_id)
         user_location = Point(float(longitude), float(latitude), srid=4326)
     except ValueError:
         return Response({"error": "Invalid location data"}, status=status.HTTP_400_BAD_REQUEST)
@@ -144,12 +139,10 @@ def check_nearby_events(request):
 
     if nearby_events:
         for event in nearby_events:
-            user = get_object_or_404(User, id=user_id)
-            notify_user(
+            send_notification_to_user(
                 user=user,
                 title=event.title,
                 body=event.description,
-                notification_type="event"
             )
         return Response({"message": "Notifications sent for nearby events"}, status=status.HTTP_200_OK)
     else:
