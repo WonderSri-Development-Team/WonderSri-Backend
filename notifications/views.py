@@ -64,7 +64,7 @@ class SendNotificationView(APIView):
 
         
 @api_view(['GET'])
-def get_notification_schema():
+def get_notification_schema(request):
     """
     Returns the schema for notifications.
     """

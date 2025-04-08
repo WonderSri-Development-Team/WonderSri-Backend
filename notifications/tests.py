@@ -3,7 +3,8 @@ from django.test import TestCase, RequestFactory
 from rest_framework_simplejwt.tokens import RefreshToken
 from location.views import create_event
 from notifications.models import UserDevice
-from notifications.views import check_nearby_events
+from notifications.constants import GENERAL_TIPS
+from notifications.views import check_nearby_events, send_general_tip_to_user
 from django.contrib.gis.geos import Point
 from location.models import Location, Event
 from django.contrib.auth.models import User
@@ -70,23 +71,18 @@ class NotificationTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(mock_send_push_notifications.called)
 
-         
+    @patch('notifications.views.send_push_notifications')
+    def test_send_general_tips(self, mock_send_push_notifications):
+        """Test sending general tips."""
+        send_general_tip_to_user() 
+        self.assertGreaterEqual(mock_send_push_notifications.call_count, 1) # At least one call
+        if GENERAL_TIPS:
+            users = User.objects.all()
+            for user in users:
+                mock_send_push_notifications.assert_called_with(user.fcm_token, GENERAL_TIPS[0]["title"], GENERAL_TIPS[0]["body"])
 
-    # @patch('notifications.views.send_push_notifications')
-    # def test_send_general_tips(self, mock_send_push_notifications):
-    #     """Test sending general tips."""
-    #     send_general_tips() 
-    #     self.assertGreaterEqual(mock_send_push_notifications.call_count, 1) # At least one call
-    #     # You might want to add more specific assertions based on your GENERAL_TIPS
-
-    # @patch('notifications.views.send_push_notifications')
-    # def test_welcome_notification(self, mock_send_push_notifications):
-    #     """Test welcome message notification."""
-    #     welcome_notification(self.user)
-    #     mock_send_push_notifications.assert_called_once()  
-
-    # # Helper function to simulate sending a push notification (replace with your logic)
-    # def send_push_notifications(self, fcm_token, title, body):
-    #     """Mock function to simulate sending push notifications."""
-    #     print(f"Sending notification to {fcm_token}: Title: {title}, Body: {body}")
-    #     return True 
+    # Helper function to simulate sending a push notification (replace with your logic)
+    def send_push_notifications(self, fcm_token, title, body):
+        """Mock function to simulate sending push notifications."""
+        print(f"Sending notification to {fcm_token}: Title: {title}, Body: {body}")
+        return True 
