@@ -35,4 +35,3 @@ EXPOSE 10000
 
 # Run migrations and start the Django application with Daphne
 CMD ["sh", "-c", "python manage.py migrate && daphne -b 0.0.0.0 -p 10000 --proxy-headers WonderSri_backend.asgi:application"]
-
