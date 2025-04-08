@@ -1,6 +1,7 @@
 from datetime import timezone, datetime
 from django.test import TestCase, RequestFactory
 from rest_framework_simplejwt.tokens import RefreshToken
+from location.views import create_event
 from notifications.models import UserDevice
 from notifications.views import check_nearby_events
 from django.contrib.gis.geos import Point
@@ -46,11 +47,30 @@ class NotificationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         mock_send.assert_called_once() 
 
-    # @patch('notifications.views.send_push_notifications')
-    # def test_new_event_added_notification(self, mock_send_push_notifications):
-    #     """Test new event notification (you'll likely trigger this in your Event creation logic)."""
-    #     # ... (Implementation depends on how you trigger new event notifications) 
-    #     pass 
+    @patch('notifications.views.send_push_notifications')
+    def test_new_event_added_notification(self, mock_send_push_notifications):
+        """Test new event notification."""
+        factory = RequestFactory()
+        request = factory.post('/events/create/', {
+            'title': 'New Event',
+            'description': 'This is a new event.',
+            'location': self.location.id,
+            'start_date': timezone.make_aware(datetime.datetime(2025, 4, 5)),
+            'end_date': timezone.make_aware(datetime.datetime(2025, 4, 10)),
+            'price': 50.00,
+            # 'user_id': self.user.id,
+            # 'event_id': self.event.id
+        }, format='json')
+
+        response = create_event(request)
+        # request.META['HTTP_AUTHORIZATION'] = f'Bearer {self.access_token}'
+        # request.user = self.user 
+
+        # response = check_nearby_events(request) 
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(mock_send_push_notifications.called)
+
+         
 
     # @patch('notifications.views.send_push_notifications')
     # def test_send_general_tips(self, mock_send_push_notifications):

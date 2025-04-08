@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
@@ -9,7 +10,7 @@ from django.contrib.gis.measure import D # For distance calculations
 from .models import User, UserDevice
 from location.models import Event, Location, Activity, Food
 from .serializers import DeviceSerializer
-from .constants import GENERAL_TIPS, notification_schema
+from .constants import GENERAL_TIPS, NOTIFICATION_SCHEMA
 import json
 import random
 from firebase_admin import messaging
@@ -63,24 +64,25 @@ class SendNotificationView(APIView):
 
         
 @api_view(['GET'])
-def get_notification_schema(request):
+def get_notification_schema():
     """
     Returns the schema for notifications.
     """
-    return Response(notification_schema, status=status.HTTP_200_OK)
+    return Response(NOTIFICATION_SCHEMA)
 
         
-def send_notification_to_device(fcm_token, title, body):
+def send_notification_to_device(fcm_token, title, body, data=None):
     message = messaging.Message(
         notification=messaging.Notification(title=title, body=body),
         token=fcm_token,
+        data=data or {},
     )
     response = messaging.send(message)
     print(f"Notification Sent to {fcm_token}: {response}")
     return response
 
 
-def send_notification_to_user(user, title=None, body=None):
+def send_notification_to_user(user, title=None, body=None, data=None):
     """
     Centralized function to send notifications to all devices of a user.
     """
@@ -91,7 +93,7 @@ def send_notification_to_user(user, title=None, body=None):
         return
 
     for device in devices:
-        send_notification_to_device(device.fcm_token, title, body)
+        send_notification_to_device(device.fcm_token, title, body, data)
 
 def send_general_tip_to_user(user):
     """Send a random general tip as a notification to the user."""
@@ -105,7 +107,7 @@ def send_general_tip_to_user(user):
 
 def notify_new_event(event):
     """Notify all users about a new event."""
-    users = User.objects.all()
+    users = User.objects.filter(profile__notifications_enabled=True)
     
     for user in users:
         send_notification_to_user(user, event.title, event.description)
@@ -137,12 +139,14 @@ def check_nearby_events(request):
     nearby_events = Event.objects.filter(
         location__coordinates__distance_lte=(user_location, D(km=5)))
 
-    if nearby_events:
+    if nearby_events.exists():
+        # Send notifications for each nearby event
         for event in nearby_events:
             send_notification_to_user(
                 user=user,
                 title=event.title,
                 body=event.description,
+                data={'timestamp': datetime.now(timezone.utc).isoformat()}
             )
         return Response({"message": "Notifications sent for nearby events"}, status=status.HTTP_200_OK)
     else:

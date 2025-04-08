@@ -1,4 +1,7 @@
 # General travel tips
+from datetime import datetime
+
+
 GENERAL_TIPS = [
     {"title": "Respect Local Customs", "body": "Always be mindful of the local customs and traditions."},
     {"title": "Dress Modestly in Public Spaces", "body": "Avoid wearing revealing clothes in public areas."},
@@ -8,17 +11,17 @@ GENERAL_TIPS = [
     {"title": "Wildlife Safety", "body": "Do not feed or disturb animals in national parks."},
 ]
 
-notification_schema = {
-    "type": "event",
-    "title": "Event Nearby!",
-    "body": "You are close to Galle Fort. Check it out!",
-    "timestamp": "2022-02-28T10:00:00Z",
+NOTIFICATION_SCHEMA = {
+    "type": str,
+    "title": str,
+    "body": str,
+    "timestamp": datetime,
     "data": {
-        "eventId": "1234",
+        "eventId": int,
         "location": {
-            "lat": 6.0328,
-            "lon": 80.2170,
+            "lat": float,
+            "lon": float,
             },
         },
-    "read": False,
+    "read": bool,
 }
