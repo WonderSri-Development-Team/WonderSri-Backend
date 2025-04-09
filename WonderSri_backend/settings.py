@@ -27,9 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # GDAL_LIBRARY_PATH = r"D:/Program Files/OSGeo4W/bin/gdal310.dll"
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
+#JWT GENERATION
 SECRET_KEY = config('SECRET_KEY', default=os.getenv('SECRET_KEY'))
 
 # JWT Settings
@@ -53,6 +51,7 @@ DEBUG = config('DEBUG', default=os.getenv("DEBUG", "False")) == "True"
 
 ALLOWED_HOSTS = ["wondersri-backend-1.onrender.com", "localhost", "127.0.0.1","wondersri-backend-test.onrender.com","wondersri-backend.onrender.com","wondersri-backend-tracking.onrender.com"]
 
+PORT = os.getenv("PORT", "10000")
 
 # Application definition
 INSTALLED_APPS = [
@@ -62,24 +61,28 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',
     'django.contrib.gis',
+
+    # third party apps
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
-    'users',
     'drf_yasg', #Swagger
     'rest_framework_simplejwt.token_blacklist',
+    'dj_rest_auth',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'dj_rest_auth',
     'social_django',
-    'storages',
 
+    # My apps
+    'users',
+    'storages',
     'location',
-    'tracking'
+    'notifications',
+    'channels',
+    'tracking',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -93,7 +96,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -217,3 +219,16 @@ AWS_S3_ADDRESSING_STYLE = 'virtual'
 # Use S3 for Media Storage
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
+
+# Firebase Cloud Messaging Settings
+
+# FIREBASE_CREDENTIALS_PATH = BASE_DIR / config('FIREBASE_CREDENTIALS_PATH')
+FIREBASE_API_KEY = config('FIREBASE_API_KEY')
+FIREBASE_APP_ID=config('FIREBASE_APP_ID')
+FIREBASE_PROJECT_ID=config('FIREBASE_PROJECT_ID')
+FIREBASE_MESSAGING_SENDER_ID = config('FIREBASE_MESSAGING_SENDER_ID')
+# FCM_SERVER_KEY = config('FCM_SERVER_KEY')
+
+# Read supabase variables from .env
+# SUPABASE_HOST = config("SUPABASE_HOST")
+# SUPABASE_KEY = config("SUPABASE_KEY")

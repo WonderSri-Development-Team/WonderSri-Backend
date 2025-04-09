@@ -10,7 +10,7 @@ from users.models import UserProfile
 from users.serializers import UserSerializer, ProfileSerializer
 from .models import Event, Activity, Food
 from .serializers import EventSerializer, FoodSerializer, ActivitiesSerializer
-
+from notifications.views import notify_new_event
 
 # --------------------------- LOCATION-BASED EVENTS ---------------------------
 
@@ -64,6 +64,7 @@ def create_event(request):
 
     if serializer.is_valid():
         event = serializer.save()
+        notify_new_event(event)  # Notify users about the new event
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
