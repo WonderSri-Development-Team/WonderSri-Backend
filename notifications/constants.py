@@ -12,16 +12,16 @@ GENERAL_TIPS = [
 ]
 
 NOTIFICATION_SCHEMA = {
-    "type": str,
-    "title": str,
-    "body": str,
-    "timestamp": datetime,
+    "type": "str",
+    "title": "str",
+    "body": "str",
+    "timestamp": "datetime",
     "data": {
-        "eventId": int,
+        "eventId": "int",
         "location": {
-            "lat": float,
-            "lon": float,
+            "lat": "float",
+            "lon": "float",
             },
         },
-    "read": bool,
+    "read": "bool",
 }
