@@ -1,7 +1,3 @@
-# General travel tips
-from datetime import datetime
-
-
 GENERAL_TIPS = [
     {"title": "Respect Local Customs", "body": "Always be mindful of the local customs and traditions."},
     {"title": "Dress Modestly in Public Spaces", "body": "Avoid wearing revealing clothes in public areas."},
@@ -12,16 +8,16 @@ GENERAL_TIPS = [
 ]
 
 NOTIFICATION_SCHEMA = {
-    "type": str,
-    "title": str,
-    "body": str,
-    "timestamp": datetime,
+    "type": "str",
+    "title": "str",
+    "body": "str",
+    "timestamp": "datetime",
     "data": {
-        "eventId": int,
+        "eventId": "int",
         "location": {
-            "lat": float,
-            "lon": float,
+            "lat": "float",
+            "lon": "float",
             },
         },
-    "read": bool,
+    "read": "bool",
 }
